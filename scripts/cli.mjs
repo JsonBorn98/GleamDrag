@@ -152,7 +152,7 @@ program.command('build')
 				{
 					saveTo: pathLib.join(
 						artifacts,
-						`glitterdrag-pro-${BUILD_VERSION}-${args.target}.zip`
+						`gleamdrag-${BUILD_VERSION}-${args.target}.zip`
 					)
 				}
 			);

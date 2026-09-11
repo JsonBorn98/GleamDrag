@@ -8,8 +8,8 @@ export class PromptImpl extends MessageTarget implements PromptInterface {
 
 	constructor() {
 		super(ProxyEventType.Prompt)
-		customElements.define('glitterdrag-prompt', PromptElement as any);
-		this.elem = document.createElement("glitterdrag-prompt") as HTMLElement & PromptElement;
+		customElements.define('gleamdrag-prompt', PromptElement as any);
+		this.elem = document.createElement("gleamdrag-prompt") as HTMLElement & PromptElement;
 	}
 
 	show(text: string) {

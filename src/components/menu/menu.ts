@@ -6,7 +6,7 @@ import { rootLog } from '../../utils/log';
 import { LogLevel } from '../../config/config';
 
 const log = rootLog.subLogger(LogLevel.VVV, "menu")
-const tag = "glitterdrag-menu"
+const tag = "gleamdrag-menu"
 
 
 class MenuImpl extends MessageTarget implements MenuInterface {

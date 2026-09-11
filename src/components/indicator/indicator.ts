@@ -6,7 +6,7 @@ import { MessageTarget } from '../helper';
 
 
 
-const tag = "glitterdrag-indicator"
+const tag = "gleamdrag-indicator"
 const style = `position: absolute;
 	left: 0;
 	top: 0;

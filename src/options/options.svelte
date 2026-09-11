@@ -73,7 +73,7 @@
 		setTimeout(() => {
 			URL.revokeObjectURL(url);
 		}, 1000 * 60);
-		fileDownloader.download = `GlitterDrag-Config-${formatDateWithZeroPadding(now).join(
+		fileDownloader.download = `GleamDrag-Config-${formatDateWithZeroPadding(now).join(
 			""
 		)}.json`;
 		fileDownloader.href = url;

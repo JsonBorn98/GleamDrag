@@ -66,7 +66,7 @@ export default function (opt) {
         if (isFirefox) {
             return {
                 "gecko": {
-                    "id": "glitterdragpro@harytfw",
+                    "id": "gleamdrag@jsonborn98",
                     "strict_min_version": "106.0"
                 }
             }
@@ -79,11 +79,11 @@ export default function (opt) {
         "name": "__MSG_extensionName__",
         "description": "__MSG_extensionDescription__",
         "version": version,
-        "homepage_url": "https://github.com/harytfw/GlitterDrag",
+        "homepage_url": "https://github.com/JsonBorn98/GleamDrag",
         "icons": {
             "128": "/icon/drag.png"
         },
-        "author": "harytfw",
+        "author": "jsonborn98",
         "permissions": manifestPermissions(),
         "host_permissions": [
             "*://*/*"

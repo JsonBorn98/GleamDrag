@@ -1,5 +1,5 @@
 {
-    "name": "glitterdrag-pro",
+    "name": "gleamdrag",
     "type": "module",
     "devDependencies": {
         "@rollup/plugin-commonjs": "^25.0.0",

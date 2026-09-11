@@ -1,7 +1,7 @@
 
-## GlitterDrag Pro
+## GleamDrag
 
-![](https://img.shields.io/github/license/harytfw/GlitterDrag)
+![](https://img.shields.io/github/license/JsonBorn98/GleamDrag)
 
 A good drag and drop extension that improve your browsing experience. Currently support Firefox, Chrome, Edge and other chromium-based browser.
 
@@ -34,3 +34,9 @@ The extension has limited support at these situation:
 - Can not work when dragging any selection from page A and dropping at page B, and page A and page B have different origin. (For example, [host page](www.example.com) is A, it embeds [youtube video](https://www.youtube.com/embed/-88qGXDmh3E) as B)
 - When host page explicitly uses drag-and-drop features, the extension will stop working temporarily
 - Unable show icon of menu on when [CSP](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/Sources#sources) of host page prohibits *data:* URLs
+
+## Credits
+
+GleamDrag is a personally maintained fork of [GlitterDrag](https://github.com/harytfw/GlitterDrag) by [harytfw](https://github.com/harytfw), and would not exist without their work.
+
+This fork is maintained for personal use. No pull requests are made against upstream, and external pull requests are not accepted.
