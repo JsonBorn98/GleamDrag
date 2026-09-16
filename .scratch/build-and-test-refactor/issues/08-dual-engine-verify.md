@@ -11,3 +11,4 @@
 - [ ] 两个引擎跑同一套件，结果一致全绿
 - [ ] 不声称覆盖 Chrome/Edge stable 真机验收（留手动装包）
 - [ ] 测试 harness 有看门狗：浏览器腿退出/超时，wss/收集腿必须能收尾报非零，不得永等（票 03 retro：旧链路 waitTestComplete 无超时，浏览器死掉即僵尸占端口、下一次 run 秒死 EADDRINUSE 日志 0 字节——新 harness 复刻这个形状就是复刻事故）
+  - 看门狗直接落点：scripts/test_wxt.mjs（票 05 写的过渡 harness）照抄了 cli.mjs 的 waitTestComplete——无超时无看门狗，Firefox 腿死掉它同样永等占端口。票 08 重构它时先跑 `netstat -ano | grep :8000` 查残留（shoals 口诀），别在无看门狗形状上叠加调试。
