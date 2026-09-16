@@ -2,19 +2,60 @@ import { program } from 'commander'
 import fs from 'fs-extra'
 import { spawn } from 'node:child_process'
 import pathLib from 'node:path'
+import { fileURLToPath } from 'node:url'
 import * as rollup from 'rollup'
 import webExt from 'web-ext'
 import { WebSocketServer } from 'ws'
 import zipDir from 'zip-dir'
 import buildRollupConfig from './build_rollup.mjs'
 import genManifest from './gen_manifest.mjs'
-import { isTestTarget, mustEnv } from './utils.mjs'
+import { detectFirefoxBinary, isTestTarget, mustEnv } from './utils.mjs'
 
 const BUILD_DIR = mustEnv("BUILD_DIR", "./build")
 const BUILD_SRC = mustEnv("BUILD_SRC", "./src")
 const BUILD_VERSION = mustEnv("BUILD_VERSION", "2.1.0")
 
-const FIREFOX = "firefox-developer-edition"
+// web-ext is invoked as `node <repo>/node_modules/web-ext/bin/web-ext.js`
+// instead of `pnpm exec web-ext`: pnpm's ignored-builds precheck hijacks the
+// exit code, and a bare "pnpm" only resolves with a shell or an
+// extension-aware lookup.
+const WEB_EXT_BIN = pathLib.join(
+	pathLib.dirname(fileURLToPath(import.meta.url)),
+	"..", "node_modules", "web-ext", "bin", "web-ext.js"
+)
+
+function firefoxBinaryOrExit() {
+	const binary = detectFirefoxBinary()
+	if (binary === null) {
+		console.error(
+			"no Firefox binary found; set GLEAMDRAG_FIREFOX_BIN to a firefox executable path"
+		)
+		process.exit(1)
+	}
+	return binary
+}
+
+function runWebExt(dist, signal) {
+	return new Promise((resolve, reject) => {
+		const proc = spawn(process.execPath, [WEB_EXT_BIN, "run", "-f", firefoxBinaryOrExit(), "-s", dist], {
+			stdio: ["ignore", process.stdout, process.stderr],
+			signal: signal
+		})
+
+		proc.on("error", (err) => {
+			console.error(err)
+			resolve()
+		})
+
+		proc.on("close", (code) => {
+			if (code === 0) {
+				resolve()
+			} else {
+				reject("code: " + code)
+			}
+		})
+	})
+}
 
 function copyAssets(destDir) {
 	const assets = [
@@ -105,6 +146,7 @@ program.command('build')
 	.option('--lint', "Use web-ext validates extension source", false)
 	.option('--watch', "Watch source file change", false)
 	.option('--websocket-server <addr>', "The address of websocket server for capture event of unit test", "ws://localhost:8000")
+	.option('--test-suite <suite>', "Open the test page with ?suite=<suite> on install (fixture red leg)", "")
 	.action(async (args, options) => {
 		validateTarget(args.target)
 		const dist = pathLib.join(BUILD_DIR, args.target, "dist")
@@ -127,6 +169,7 @@ program.command('build')
 			watch: args.watch,
 			target: args.target,
 			websocketServer: args.websocketServer,
+			testSuite: args.testSuite,
 		})
 		const artifacts = pathLib.join(
 			BUILD_DIR,
@@ -167,32 +210,15 @@ program.command('test')
 	.description('Start Firefox browser and run unit tests')
 	.option('-t, --target <target>', "The target to build", "firefox-test")
 	.option('-s, --websocket-server <addr>', "The address of websocket server for capture event of unit test", "ws://localhost:8000")
+	// Commander gives --no-<x> options a default of true (explicitly passing
+	// false here would pin browser=false and never launch web-ext).
+	.option('--no-browser', "Judge a synthetic event stream only; do not launch web-ext/Firefox (exit-code verification)")
 	.action(async (args) => {
 		validateTarget(args.target)
 		const dist = buildDist(args.target)
 
 		async function runBrowser(signal) {
-
-			return new Promise((resolve, reject) => {
-
-				const proc = spawn("pnpm", ["exec", "web-ext", "run", "-f", FIREFOX, "-s", dist], {
-					stdio: ["ignore", process.stdout, process.stderr],
-					signal: signal
-				})
-
-				proc.on("error", (err) => {
-					console.error(err)
-					resolve()
-				})
-
-				proc.on("close", (code) => {
-					if (code === 0) {
-						resolve()
-					} else {
-						reject("code: " + code)
-					}
-				})
-			})
+			return runWebExt(dist, signal)
 		}
 
 
@@ -244,9 +270,13 @@ program.command('test')
 		// Attach the handler at creation: a web-ext that dies before the
 		// "end" event must not become an unhandled rejection and hijack
 		// the exit-code contract — only the test result decides it.
-		const browserDone = runBrowser(controller.signal).catch((reason) => {
-			console.error("web-ext exited unexpectedly:", reason)
-		})
+		// --no-browser skips the launch entirely: exit-code verification
+		// feeds a synthetic stream and only the judgment path runs.
+		const browserDone = args.browser
+			? runBrowser(controller.signal).catch((reason) => {
+				console.error("web-ext exited unexpectedly:", reason)
+			})
+			: Promise.resolve()
 
 		const result = await resultPromise
 		await browserDone
@@ -265,26 +295,7 @@ program.command('watch')
 
 		validateTarget(args.target)
 
-		const dist = buildDist(args.target)
-
-		return new Promise((resolve, reject) => {
-			const proc = spawn("pnpm", ["exec", "web-ext", "run", "-f", FIREFOX, "-s", dist], {
-				stdio: ["ignore", process.stdout, process.stderr],
-			})
-
-			proc.on("error", (err) => {
-				console.error(err)
-				resolve()
-			})
-
-			proc.on("close", (code) => {
-				if (code === 0) {
-					resolve()
-				} else {
-					reject("code: " + code)
-				}
-			})
-		})
+		return runWebExt(buildDist(args.target))
 	});
 
 program.command('clean')

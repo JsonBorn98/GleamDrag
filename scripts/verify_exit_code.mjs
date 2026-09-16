@@ -9,9 +9,9 @@
 // The synthetic websocket client speaks the same event protocol as the
 // in-extension StreamReporter (src/test/mocha_init.ts), so the judgment and
 // exit-code path are exercised without a browser. The real-browser leg
-// (Firefox opening test/mocha.html?suite=fixture) belongs to the Windows
-// baseline ticket and the CI leg to the CI ticket; wiring the fixture into
-// them is deliberately left out of this ticket's scope.
+// (Firefox opening test/mocha.html?suite=fixture through the build-time
+// --test-suite injection) is verified by the Windows baseline ticket; the CI
+// leg belongs to the CI ticket.
 //
 // Usage: pnpm run verify:exit-code
 
@@ -87,10 +87,14 @@ function tryConnect(port) {
 
 // Spawn the real `test` command against a private websocket port and feed it
 // the given mocha events; resolve with its exit code and captured output.
+// --no-browser keeps the scenario on the judgment path: before the Windows
+// fix, `spawn("pnpm", ...)` failed and no browser ever launched, so these
+// scenarios passed by accident; a working launch would race the synthetic
+// stream against a real Firefox test page and hang.
 async function runTestCommand(events) {
 	const port = await freePort()
 	const wsUrl = `ws://127.0.0.1:${port}`
-	const child = spawn(process.execPath, ["scripts/cli.mjs", "test", "-s", wsUrl], {
+	const child = spawn(process.execPath, ["scripts/cli.mjs", "test", "-s", wsUrl, "--no-browser"], {
 		cwd: repoRoot,
 		stdio: ["ignore", "pipe", "pipe"],
 	})

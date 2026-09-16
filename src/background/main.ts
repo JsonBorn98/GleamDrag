@@ -107,6 +107,13 @@ async function openMocha() {
         return
     }
 
+    // Fixture red leg: builds may pin the suite the test page registers via
+    // `?suite=`; the default build opens the plain green page.
+    const testSuite = buildInfo.testSuite
+    if (testSuite) {
+        url.searchParams.set("suite", testSuite)
+    }
+
     browser.tabs.create({
         url: url.toString()
     })

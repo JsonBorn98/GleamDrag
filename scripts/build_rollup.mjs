@@ -1,4 +1,4 @@
-import { readStdout } from "./utils.mjs";
+import { execFileSync } from 'node:child_process';
 
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
@@ -7,6 +7,7 @@ import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 import os from "node:os";
 import pathLib from 'node:path';
+import * as rollup from 'rollup';
 import svelte from 'rollup-plugin-svelte';
 import autoPreprocess from 'svelte-preprocess';
 
@@ -14,20 +15,28 @@ import autoPreprocess from 'svelte-preprocess';
 const useCustomElement = ["components"]
 
 export default function (opts) {
-	const { profile, websocketServer, src, dist, entryPoints, target } = opts
+	const { profile, websocketServer, src, dist, entryPoints, target, testSuite } = opts
 
 	const isProd = profile.toLowerCase() === 'prod';
 	const sourceMap = !isProd
 
+	// Read build metadata in-process (git via execFileSync, timestamps and
+	// versions from the running runtime) instead of shelling out to GNU
+	// tools (`date --rfc-3339`, `npx rollup --version`), which do not exist
+	// on a bare Windows install.
 	const safeEnvVar = {
-		commitId: readStdout("git rev-parse --short HEAD"),
-		date: readStdout("date --rfc-3339=seconds"),
-		nodeVersion: readStdout("node --version"),
-		rollupVersion: readStdout("npx rollup --version"),
+		commitId: execFileSync("git", ["rev-parse", "--short", "HEAD"], { encoding: "utf8" }).trim(),
+		date: new Date().toISOString(),
+		nodeVersion: process.version,
+		rollupVersion: rollup.VERSION,
 		os: os.platform(),
 		profile,
-		websocketServer,
+		// mocha_init reads the camelCase `webSocketServer`; the snake_case
+		// key upstream injected here never matched, so no test event
+		// reached the websocket server.
+		webSocketServer: websocketServer,
 		target,
+		testSuite: testSuite ?? "",
 	}
 
 	function getPlugins(entrypoint) {
@@ -42,6 +51,8 @@ export default function (opts) {
 				preventAssignment: true
 			}),
 			replace({
+				// openMocha reads the suite through __ENV.testSuite — the same
+				// channel mocha_init uses for webSocketServer (fixture red leg).
 				__ENV: JSON.stringify(safeEnvVar),
 				__BUILD_PROFILE: JSON.stringify(profile),
 				preventAssignment: true

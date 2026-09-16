@@ -11,7 +11,10 @@ export async function blankExecuteContext(action?: ActionConfig): Promise<Execut
         throw new Error("no active tab")
     }
     return {
-        tab: {} as browser.Tabs.Tab,
+        // Real tab id from the mocha tab: modern Firefox throws synchronously
+        // on tabs.sendMessage(undefined, ...) ("Incorrect argument types"),
+        // which made the copy-text contract test fail before this fix.
+        tab: { id: tab.id } as browser.Tabs.Tab,
         state: await defaultVolatileState(),
         action: action ? action : new ActionConfig({}),
         config: new Configuration({}),
