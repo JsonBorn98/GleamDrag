@@ -60,10 +60,12 @@ export default defineConfig({
 	},
 	hooks: {
 		// gen_manifest.mjs wrote browser_style: true for BOTH targets; WXT
-		// only emits it for firefox. Chrome ignores the field, but byte-level
-		// parity with the legacy manifest is the migration contract.
+		// only emits it for firefox. Chrome ignores the field, but parity
+		// with the legacy manifest is the migration contract. The options
+		// entrypoint ships in every build, so options_ui is always set here.
 		"build:manifestGenerated": (_wxt, manifest) => {
-			(manifest.options_ui as { browser_style?: boolean } | undefined ?? {}).browser_style = true;
+			if (manifest.options_ui == null) return;
+			(manifest.options_ui as { browser_style?: boolean }).browser_style = true;
 		},
 	},
 	vite: (env) => ({

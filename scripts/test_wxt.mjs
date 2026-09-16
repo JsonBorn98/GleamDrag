@@ -1,12 +1,14 @@
 // In-extension contract suite runner for the WXT chain.
 //
-// Mirrors scripts/cli.mjs `test`: build the WXT test artifact, launch web-ext
-// against the local Firefox, judge the suite over the same [type, payload]
-// WebSocket protocol the in-extension StreamReporter speaks, and exit non-zero
-// when any test fails (exit-code contract).
+// Mirrors scripts/cli.mjs `test`: launch web-ext against the local Firefox
+// with the .output/firefox-mv3 artifact (build it first with
+// `bun run build:test` plus GLEAMDRAG_WS_SERVER), judge the suite over the
+// same [type, payload] WebSocket protocol the in-extension StreamReporter
+// speaks, and exit non-zero when any test fails (exit-code contract).
+// This script does NOT build; a missing artifact hangs the websocket server.
 //
 // Usage:
-//   node scripts/test_wxt.mjs            # build + run in real Firefox
+//   node scripts/test_wxt.mjs            # run in real Firefox (build first)
 //   node scripts/test_wxt.mjs --no-browser  # judge a synthetic stream only
 
 import { spawn } from "node:child_process"
