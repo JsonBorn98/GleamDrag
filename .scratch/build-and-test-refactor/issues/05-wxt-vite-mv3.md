@@ -6,10 +6,10 @@ Claimed-at: 2026-09-16T15:32:54.679Z
 
 **阻塞于.** 04
 
-**状态.** claimed
+**状态.** resolved
 
-- [ ] 一条命令产出 Firefox 与 Chromium 两份 MV3 产物 zip
-- [ ] Firefox 产物显式 manifest_version 3（不落回默认 MV2）
-- [ ] manifest 浏览器差异与旧生成器等价（权限、background、测试 CSP 覆盖）
-- [ ] TypeScript strict 开启且类型检查全绿
-- [ ] 旧套件测试入口仅出现在测试构建，普通产物不含测试页
+- [x] 一条命令产出 Firefox 与 Chromium 两份 MV3 产物 zip
+- [x] Firefox 产物显式 manifest_version 3（不落回默认 MV2）
+- [x] manifest 浏览器差异与旧生成器等价（权限、background、测试 CSP 覆盖）
+- [x] TypeScript strict 开启且类型检查全绿
+- [x] 旧套件测试入口仅出现在测试构建，普通产物不含测试页
