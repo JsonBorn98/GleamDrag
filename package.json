@@ -4,9 +4,10 @@
     "type": "module",
     "scripts": {
         "verify:exit-code": "node scripts/verify_exit_code.mjs",
-        "build": "wxt build -b firefox && wxt build -b chromium",
-        "build:test": "GLEAMDRAG_TEST_BUILD=1 wxt build -b firefox",
-        "zip": "wxt build -b firefox && wxt build -b chromium && wxt zip -b firefox && wxt zip -b chromium",
+        "sync:public": "node scripts/sync_public.mjs",
+        "build": "node scripts/sync_public.mjs && wxt build -b firefox && wxt build -b chromium",
+        "build:test": "node scripts/sync_public.mjs && GLEAMDRAG_TEST_BUILD=1 wxt build -b firefox",
+        "zip": "node scripts/sync_public.mjs && wxt build -b firefox && wxt build -b chromium && wxt zip -b firefox && wxt zip -b chromium",
         "typecheck": "tsc --noEmit"
     },
     "devDependencies": {

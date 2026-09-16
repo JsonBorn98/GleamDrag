@@ -4,7 +4,7 @@ type EnvVariable = {
 	commitId: string
 	date: string
 	nodeVersion: string
-	rollupVersion: string
+	buildToolVersion: string
 	os: string
 	webSocketServer: string
 	profile: string

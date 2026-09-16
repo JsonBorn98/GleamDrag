@@ -36,7 +36,7 @@ describe("content script utils", () => {
 
 		assert.ok(lru.get(1) === undefined)
 		assert.ok(lru.get(2) === undefined)
-		assert.ok(lru.get(undefined as any) === undefined)
+		assert.ok(lru.get(undefined!) === undefined)
 
 		lru.put(1, 1)
 		lru.put(2, 2)

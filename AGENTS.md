@@ -9,7 +9,7 @@ This is a personal fork of GleamDrag (origin: JsonBorn98/GleamDrag). The upstrea
 
 ## Project Structure & Module Organization
 
-GleamDrag is a Manifest V3 browser extension written in TypeScript and Svelte. Runtime code lives under `src/`: `background/` handles extension services, `content_scripts/` implements page interactions, `options/` contains the settings UI, and `components/` provides reusable Svelte UI. Configuration, state, request resolution, and shared utilities have dedicated directories. Locale catalogs are in `src/_locales/`, static images in `src/icon/`, and build tooling in `scripts/`. Tests are colocated with their subjects as `*.test.ts`. Generated packages and browser-specific output belong in `build/` and must not be committed.
+GleamDrag is a Manifest V3 browser extension written in TypeScript and Svelte. Runtime code lives under `src/`: `background/` handles extension services, `content_scripts/` implements page interactions, `options/` contains the settings UI, and `components/` provides reusable Svelte UI. Configuration, state, request resolution, and shared utilities have dedicated directories. During the WXT migration `public/` (and `public-test/` for test builds) is the WXT static-asset source of truth; the legacy chain still reads `src/_locales/` and `src/icon/` (and `node_modules` copies of simpledotcss/mocha/chai) — both die with the legacy scripts. `src/entrypoints/` holds the WXT entrypoints. Build tooling lives in `scripts/`. Tests are colocated with their subjects as `*.test.ts`. Generated packages and browser-specific output belong in `build/` and `.output/` and must not be committed.
 
 ## Build, Test, and Development Commands
 

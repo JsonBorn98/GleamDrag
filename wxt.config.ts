@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { defineConfig } from "wxt";
 import { svelte3 } from "./scripts/vite-plugin-svelte3";
 
@@ -7,7 +8,12 @@ import { svelte3 } from "./scripts/vite-plugin-svelte3";
 // scripts and the test-only CSP override are WXT-generated per target.
 // No second hand-written manifest generator — this file is the only one.
 
-const BUILD_VERSION = process.env.BUILD_VERSION ?? "2.2.1";
+// Single version source: package.json feeds both the manifest version and
+// the zip name ({{version}} picks up the manifest version).
+const packageJson = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as {
+	version: string;
+};
+const BUILD_VERSION = process.env.BUILD_VERSION ?? packageJson.version;
 // debug|prod parity with the legacy --profile flag (scripts/cli.mjs).
 const BUILD_PROFILE = process.env.BUILD_PROFILE ?? "debug";
 
@@ -23,8 +29,8 @@ function buildEnv(browser: string) {
 		commitId: execFileSync("git", ["rev-parse", "--short", "HEAD"], { encoding: "utf8" }).trim(),
 		date: new Date().toISOString(),
 		nodeVersion: process.version,
-		// The rollup chain reported rollup.VERSION; the WXT chain builds with vite.
-		rollupVersion: "vite",
+		// The rollup chain reported rollup.VERSION; this chain builds with vite.
+		buildToolVersion: "vite",
 		os: process.platform,
 		profile: BUILD_PROFILE,
 		webSocketServer: process.env.GLEAMDRAG_WS_SERVER ?? "",
@@ -51,6 +57,14 @@ export default defineConfig({
 		artifactTemplate: "{{name}}-{{version}}-{{browser}}.zip",
 		// Firefox store upload is out of scope (spec); no sources zip.
 		zipSources: false,
+	},
+	hooks: {
+		// gen_manifest.mjs wrote browser_style: true for BOTH targets; WXT
+		// only emits it for firefox. Chrome ignores the field, but byte-level
+		// parity with the legacy manifest is the migration contract.
+		"build:manifestGenerated": (_wxt, manifest) => {
+			(manifest.options_ui as { browser_style?: boolean } | undefined ?? {}).browser_style = true;
+		},
 	},
 	vite: (env) => ({
 		plugins: [svelte3()],

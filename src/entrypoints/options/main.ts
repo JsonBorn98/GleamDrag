@@ -1,7 +1,7 @@
 import App from "../../options/options.svelte";
 
 function setup() {
-	new App({ target: document.body })
+	void new App({ target: document.body })
 }
 
 if (document.readyState !== "loading") {

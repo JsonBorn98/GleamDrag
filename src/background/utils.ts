@@ -116,9 +116,8 @@ export async function buildDownloadableURL(ctx: ExecuteContext): Promise<URL> {
                 case "http:":
                 case "https:":
                     return url
-                // Fallthrough to link (an http(s) image shares the link
-                // handling below): filename comes from the same URL.
             }
+            // Non-http(s) image URL: the object URL is the URL itself.
             return url
         case ContextType.link:
             return new URL(primaryContextData(ctx))
