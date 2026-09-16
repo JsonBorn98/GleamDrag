@@ -6,7 +6,7 @@ Claimed-at: 2026-09-16T11:35:49.094Z
 
 **阻塞于.** 无，可立即开始
 
-**状态.** claimed
+**状态.** resolved
 
 - [x] 正常套件全绿时命令退出 0（verify_exit_code.mjs 绿场景，真实命令路径）
 - [x] 故意失败 fixture 使本地命令非零退出（fixture 真实事件流经真实 `cli.mjs test` 命令，exit 1）
