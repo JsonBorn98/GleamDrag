@@ -2,18 +2,18 @@
 //
 // Verifies through the real command path (`node scripts/cli.mjs test`):
 //   1. green: mocha-shaped "end" stats with failures = 0 -> exit code 0
-//   2. red: mocha-shaped "end" stats with failures > 0 -> exit code non-zero
-//      (exactly the shape the fixture suite produces in the browser)
-//   3. fixture: src/test/fixture/failing.ts genuinely fails under mocha
+//   2. red: the REAL event stream of the fixture suite — captured from a
+//      real mocha run of src/test/fixture/failing.ts with the same event
+//      protocol as the in-extension reporter — exits non-zero.
 //
 // The synthetic websocket client speaks the same event protocol as the
 // in-extension StreamReporter (src/test/mocha_init.ts), so the judgment and
 // exit-code path are exercised without a browser. The real-browser leg
 // (Firefox opening test/mocha.html?suite=fixture) belongs to the Windows
-// baseline ticket; CI wiring belongs to the CI ticket — when a real browser
-// is available, drive the `?suite=fixture` query through it instead.
+// baseline ticket and the CI leg to the CI ticket; wiring the fixture into
+// them is deliberately left out of this ticket's scope.
 //
-// Usage: node scripts/verify_exit_code.mjs
+// Usage: pnpm run verify:exit-code
 
 import { spawn } from 'node:child_process'
 import { createServer } from 'node:net'
@@ -32,7 +32,8 @@ function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-function tail(text, max = 4000) {
+function tail(text) {
+	const max = 4000
 	return text.length > max ? "..." + text.slice(-max) : text
 }
 
@@ -132,10 +133,23 @@ async function runTestCommand(events) {
 	return { code, output }
 }
 
-// Prove the fixture suite itself is red: load it under a real mocha bdd run
-// and count failures. The fixture only defines the registration function, so
-// the default suite importing it stays green — only the explicit call fails.
-async function countFixtureFailures() {
+function cleanRealTest(test) {
+	return {
+		title: test.title,
+		fullTitle: test.fullTitle(),
+		file: test.file ?? null,
+		duration: test.duration,
+		currentRetry: test.currentRetry(),
+		speed: test.speed,
+		err: null,
+		stack: null,
+	}
+}
+
+// Run the fixture suite under a real mocha and capture its event stream —
+// the same [type, payload] protocol the in-extension StreamReporter sends.
+// The returned events end with the fixture's own real "end" stats.
+async function captureFixtureEvents() {
 	const require = createRequire(path.join(repoRoot, "package.json"))
 	const ts = require("typescript")
 	const Mocha = require("mocha")
@@ -152,8 +166,6 @@ async function countFixtureFailures() {
 	}).outputText
 
 	// build/ is gitignored; staying under repoRoot keeps require("chai")
-	// resolving from the project node_modules
-	// build/ is gitignored; staying under repoRoot keeps require("chai")
 	// resolving from the project node_modules. The .cjs extension loads the
 	// transpiled CommonJS output under this repo's "type": "module".
 	const tmpDir = path.join(repoRoot, "build", "verify-exit-code")
@@ -161,7 +173,26 @@ async function countFixtureFailures() {
 	const tmpFile = path.join(tmpDir, "fixture.failing.cjs")
 	fs.writeFileSync(tmpFile, compiled)
 
-	const mocha = new Mocha({ ui: "bdd", reporter: "min" })
+	// mocha event names are the protocol: start / pass / fail / end
+	const captured = []
+	function CaptureReporter(runner) {
+		runner.once("start", () => {
+			captured.push(["start", { total: runner.total }])
+		})
+		runner.on("pass", (test) => {
+			captured.push(["pass", cleanRealTest(test)])
+		})
+		runner.on("fail", (test, err) => {
+			const cleanTest = cleanRealTest(test)
+			cleanTest.err = err.message
+			captured.push(["fail", cleanTest])
+		})
+		runner.once("end", () => {
+			captured.push(["end", { ...runner.stats }])
+		})
+	}
+
+	const mocha = new Mocha({ ui: "bdd", reporter: CaptureReporter })
 	mocha.addFile(tmpFile)
 	await mocha.loadFilesAsync()
 	// loadFiles fired the bdd pre-require event that attached describe/it
@@ -169,39 +200,55 @@ async function countFixtureFailures() {
 	const { registerFailingFixture } = require(tmpFile)
 	registerFailingFixture()
 
-	return await new Promise((resolve) => {
-		mocha.run((failures) => resolve(failures))
-	})
+	await new Promise((resolve) => mocha.run(resolve))
+	return captured
+}
+
+let failed = 0
+
+// capture the fixture's real events first: the red scenario replays them
+let fixtureEvents = null
+try {
+	const events = await captureFixtureEvents()
+	const endStats = events[events.length - 1][1]
+	if (!(endStats.failures > 0)) {
+		failed += 1
+		console.error(`FAIL: fixture suite unexpectedly green (${endStats.failures} failures)`)
+	} else {
+		console.log(`pass: fixture suite fails under mocha (${endStats.failures} failure(s))`)
+		fixtureEvents = events
+	}
+} catch (error) {
+	failed += 1
+	console.error(`FAIL: fixture suite check: ${error.message}`)
 }
 
 const scenarios = [
 	{
 		name: "green stats (failures = 0) exits zero",
-		expect: "zero",
+		expectZero: true,
 		events: [
 			["pass", fakeTest("synthetic: passing case")],
 			["end", mochaStats({ tests: 1, passes: 1, failures: 0 })],
 		],
 	},
-	{
-		name: "failing stats (fixture shape, failures > 0) exits non-zero",
-		expect: "non-zero",
-		events: [
-			["pass", fakeTest("synthetic: passing case")],
-			["fail", fakeTest("synthetic: fixture failing case")],
-			["end", mochaStats({ tests: 2, passes: 1, failures: 1 })],
-		],
-	},
 ]
+if (fixtureEvents) {
+	scenarios.push({
+		name: "real fixture suite events (failures > 0) exit non-zero",
+		expectZero: false,
+		events: fixtureEvents,
+	})
+}
 
-let failed = 0
 for (const scenario of scenarios) {
 	try {
 		const { code, output } = await runTestCommand(scenario.events)
-		const ok = scenario.expect === "zero" ? code === 0 : code !== 0
+		const expected = scenario.expectZero ? 0 : "non-zero"
+		const ok = scenario.expectZero ? code === 0 : code !== 0
 		if (!ok) {
 			failed += 1
-			console.error(`FAIL: ${scenario.name}: exit ${code}, expected ${scenario.expect}; output tail:\n${tail(output)}`)
+			console.error(`FAIL: ${scenario.name}: exit ${code}, expected ${expected}; output tail:\n${tail(output)}`)
 		} else {
 			console.log(`pass: ${scenario.name} (exit ${code})`)
 		}
@@ -209,19 +256,6 @@ for (const scenario of scenarios) {
 		failed += 1
 		console.error(`FAIL: ${scenario.name}: ${error.message}`)
 	}
-}
-
-try {
-	const failures = await countFixtureFailures()
-	if (!(failures > 0)) {
-		failed += 1
-		console.error(`FAIL: fixture suite unexpectedly green (${failures} failures)`)
-	} else {
-		console.log(`pass: fixture suite fails under mocha (${failures} failure(s))`)
-	}
-} catch (error) {
-	failed += 1
-	console.error(`FAIL: fixture suite check: ${error.message}`)
 }
 
 if (failed > 0) {
