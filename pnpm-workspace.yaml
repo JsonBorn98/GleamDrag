@@ -1,0 +1,5 @@
+allowBuilds:
+  core-js: set this to true or false
+  dtrace-provider: set this to true or false
+  spawn-sync: set this to true or false
+  svelte-preprocess: set this to true or false

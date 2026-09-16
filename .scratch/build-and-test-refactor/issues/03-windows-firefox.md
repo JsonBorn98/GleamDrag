@@ -6,7 +6,7 @@ Claimed-at: 2026-09-16T12:22:04.404Z
 
 **阻塞于.** 01
 
-**状态.** claimed
+**状态.** resolved
 
 - [x] Windows 本机无需 make 即可跑构建与测试命令（`node scripts/cli.mjs build|test`；GNU `date`/`npx rollup` 换进程内取值，`spawn("pnpm")` 换 node 直跑 web-ext bin，绕开 make 与 pnpm 11 ignored-builds 退出码劫持）
 - [x] 自动探测本机可用 Firefox 变体（不硬编码 developer edition；`detectFirefoxBinary`：`GLEAMDRAG_FIREFOX_BIN` 覆盖 → LOCALAPPDATA → Program Files 两处；正斜杠路径规避 fx-runner shell-quote 吞反斜杠）
