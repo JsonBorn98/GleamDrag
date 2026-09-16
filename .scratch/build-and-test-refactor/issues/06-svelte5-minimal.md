@@ -6,7 +6,7 @@ Claimed-at: 2026-09-16T16:21:58.197Z
 
 **阻塞于.** 05
 
-**状态.** claimed
+**状态.** resolved
 
 - [x] Svelte 升 5.57 且保持 legacy 写法，无 runes 迁移
 - [x] 挂载/卸载 API 与 customElement 编译不兼容点修复
