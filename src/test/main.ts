@@ -7,7 +7,7 @@ import '../config/config.test'
 import '../content_scripts/utils.test'
 import '../content_scripts/compat.test'
 import "../context/context.test"
-// import "../background/executor.test"
+import "../background/executor.test"
 import "../background/utils.test"
 import "../background/search.test"
 import "../components/menu/menu_builder.test"

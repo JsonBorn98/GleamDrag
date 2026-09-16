@@ -1,9 +1,12 @@
 
 import browser, { tabs } from 'webextension-polyfill';
-import { ActionConfig, CommandKind } from "../config/config"
+import { assert } from 'chai';
+import { ActionConfig, CommandKind, Configuration } from "../config/config"
 import { closeTab } from '../utils/test';
 import { Executor } from "./executor"
 import { blankExecuteContext } from "../context/test_helper"
+import { RuntimeMessageName } from "../message/message"
+import type { RuntimeMessage } from "../message/message"
 
 function buildActionConfig(command: CommandKind): ActionConfig {
     return new ActionConfig({ "command": command })
@@ -54,5 +57,52 @@ describe("test executor", async () => {
         } finally {
             browser.downloads.removeFile(downloadId)
         }
+    })
+
+    // The two regressions below pin the small fixes made alongside this
+    // ticket: a missing script must not be dereferenced, and a script action
+    // must not fall through into the "unknown command" default branch.
+
+    it("missing script is reported, not dereferenced", async () => {
+        const ctx = await blankExecuteContext(
+            new ActionConfig({ command: CommandKind.script, config: { scriptId: "absent" } })
+        )
+
+        const logged: unknown[][] = []
+        const originalError = console.error
+        console.error = (...args: unknown[]) => { logged.push(args) }
+        try {
+            await executor.scriptHandler(ctx)
+        } finally {
+            console.error = originalError
+        }
+
+        assert.equal(logged.length, 1, "a missing script should be reported once")
+        assert.include(String(logged[0][0]), "absent", "the report should name the missing script")
+    })
+
+    it("script action does not fall through to the unknown-command branch", async () => {
+        const ctx = await blankExecuteContext()
+        const scripted = {
+            ...ctx,
+            config: new Configuration({ scripts: [{ id: "demo", text: "console.log('hello')" }] }),
+            action: new ActionConfig({ command: CommandKind.script, config: { scriptId: "demo" } }),
+        }
+
+        let sent: RuntimeMessage<RuntimeMessageName.executeScript> | null = null
+        const originalSendMessage = browser.tabs.sendMessage
+        browser.tabs.sendMessage = (async (tabId: number, message: RuntimeMessage<RuntimeMessageName.executeScript>) => {
+            sent = message
+            return undefined
+        }) as typeof browser.tabs.sendMessage
+        try {
+            await executor.execute(scripted)
+        } finally {
+            browser.tabs.sendMessage = originalSendMessage
+        }
+
+        assert.isNotNull(sent, "the script should have been dispatched to the content script")
+        assert.equal(sent?.cmd, "doScript")
+        assert.equal(sent?.args.text, "console.log('hello')")
     })
 })

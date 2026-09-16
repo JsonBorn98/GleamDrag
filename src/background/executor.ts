@@ -41,6 +41,7 @@ export class Executor {
             }
             case CommandKind.script: {
                 await this.scriptHandler(ctx)
+                return
             }
             default: {
                 throw new Error("unknown action command: " + ctx.action.command)
@@ -180,7 +181,7 @@ export class Executor {
     async scriptHandler(ctx: ExecuteContext): Promise<void> {
         const script = ctx.config.scripts.find(s => s.id === ctx.action.config.scriptId)
         if (!script) {
-            log.E(`script "${script.id}" not found`)
+            log.E(`script "${ctx.action.config.scriptId}" not found`)
             return
         }
 
