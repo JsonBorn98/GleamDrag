@@ -92,6 +92,11 @@ browser.contextMenus.onClicked.addListener(onMenuItemClick)
 
 async function openMocha() {
     const url = new URL(browser.runtime.getURL("test/mocha.html"))
+    // exit-code contract fixture: BUILD_TEST_SUITE=fixture at build time
+    // opens the test page with ?suite=fixture (deliberately failing suite)
+    if (buildInfo.testSuite) {
+        url.searchParams.set("suite", buildInfo.testSuite)
+    }
 
     try {
         const res = await fetch(url)

@@ -166,7 +166,7 @@ program.command('build')
 program.command('test')
 	.description('Start Firefox browser and run unit tests')
 	.option('-t, --target <target>', "The target to build", "firefox-test")
-	.option('-s, --websocket-server', "The address of websocket server for capture event of unit test", "ws://localhost:8000")
+	.option('-s, --websocket-server <addr>', "The address of websocket server for capture event of unit test", "ws://localhost:8000")
 	.action(async (args) => {
 		validateTarget(args.target)
 		const dist = buildDist(args.target)
@@ -241,12 +241,17 @@ program.command('test')
 
 		const controller = new AbortController()
 		const resultPromise = waitTestComplete()
-		const browser = runBrowser(controller.signal)
+		// Attach the handler at creation: a web-ext that dies before the
+		// "end" event must not become an unhandled rejection and hijack
+		// the exit-code contract — only the test result decides it.
+		const browserDone = runBrowser(controller.signal).catch((reason) => {
+			console.error("web-ext exited unexpectedly:", reason)
+		})
 
 		const result = await resultPromise
-		await browser
+		await browserDone
 		console.log("tests: %d, passes: %d, failures: %d", result.tests, result.passes, result.failures)
-		if (result.failure > 0) {
+		if (result.failures > 0) {
 			process.exit(1)
 		} else {
 			process.exit(0)
