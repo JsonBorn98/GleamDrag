@@ -1,7 +1,9 @@
+import { mount } from "svelte";
 import App from "../../options/options.svelte";
 
 function setup() {
-	void new App({ target: document.body })
+	// Svelte 5: components are functions; mount() replaces new App({ target }).
+	mount(App, { target: document.body })
 }
 
 if (document.readyState !== "loading") {

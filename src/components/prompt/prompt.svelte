@@ -1,4 +1,4 @@
-<svelte:options tag={null} />
+<svelte:options customElement={{ tag: "gleamdrag-prompt" }} />
 
 <script lang="ts">
 	let content = "";

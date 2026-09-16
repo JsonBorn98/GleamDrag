@@ -1,4 +1,4 @@
-<svelte:options tag={null} />
+<svelte:options customElement={{ tag: "gleamdrag-menu" }} />
 
 <script lang="ts">
 	import { LogLevel } from "../../config/config";

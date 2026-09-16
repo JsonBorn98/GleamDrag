@@ -9,6 +9,6 @@
       "~/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "scripts/vite-plugin-svelte3.ts", "wxt.config.ts", ".wxt/wxt.d.ts"],
+  "include": ["src/**/*", "wxt.config.ts", ".wxt/wxt.d.ts"],
   "exclude": ["node_modules/*", "build/*", ".output/*", "public/*", "public-test/*"]
 }

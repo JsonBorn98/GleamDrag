@@ -1,11 +1,8 @@
-<svelte:options tag={null} />
+<svelte:options customElement={{ tag: "gleamdrag-indicator" }} />
 
 <script lang="ts">
-	import { get_current_component } from "svelte/internal";
 	import type { Position } from "../../types";
 
-	// https://github.com/sveltejs/svelte/issues/3091
-	let component = get_current_component();
 	let radius = 0;
 	let x = 0;
 	let y = 0;

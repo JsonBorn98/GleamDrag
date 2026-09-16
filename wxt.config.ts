@@ -1,7 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { defineConfig } from "wxt";
-import { svelte3 } from "./scripts/vite-plugin-svelte3";
 
 // Mirrors scripts/gen_manifest.mjs: browser differences (Firefox-only
 // permissions, gecko id/min-version) move here; background service_worker vs
@@ -40,6 +39,11 @@ function buildEnv(browser: string) {
 }
 
 export default defineConfig({
+	// Official Svelte support (Svelte 5, legacy component syntax). The module
+	// wires @sveltejs/vite-plugin-svelte with vitePreprocess into every build
+	// step; per-file custom elements are declared inside each component via
+	// <svelte:options customElement={{ tag }} /> (src/components/**).
+	modules: ["@wxt-dev/module-svelte"],
 	// srcDir "src" puts entrypoints at src/entrypoints (WXT default layout).
 	srcDir: "src",
 	// WXT defaults firefox to MV2; this pins MV3 for both targets.
@@ -69,7 +73,6 @@ export default defineConfig({
 		},
 	},
 	vite: (env) => ({
-		plugins: [svelte3()],
 		define: {
 			__ENV: JSON.stringify(buildEnv(env.browser)),
 			__BUILD_PROFILE: JSON.stringify(BUILD_PROFILE),
