@@ -38,7 +38,7 @@ export const actionOptionConfig: Readonly<ValueChangeConfig[]> = [
 	},
 	{
 		path: ["command"],
-		requestPermission: async (value: string[]) => {
+		requestPermission: async (value: PrimitiveType[]) => {
 			let c = value[0] as CommandKind
 			if (c === CommandKind.copy) {
 				return await browser.permissions.request({ permissions: ["clipboardWrite"] })
@@ -67,19 +67,19 @@ export const actionOptionConfig: Readonly<ValueChangeConfig[]> = [
 	},
 	{
 		path: ["config.activeTab", "config.showSaveAsDialog"],
-		transform: (value: string) => {
-			return value.toLowerCase() === "true";
+		transform: (value: PrimitiveType) => {
+			return value.toString().toLowerCase() === "true";
 		},
 		defaults: [false],
 		multiple: false,
 	},
 	{
 		path: ["condition.directions"],
-		overwrite: (value: string[]) => {
+		overwrite: (value: PrimitiveType[]) => {
 			if (value.length === 0) {
 				throw new Error("require value");
 			}
-			const v = value[0];
+			const v = value[0]!.toString();
 			if (v.length === 0) {
 				return [];
 			}
@@ -94,7 +94,7 @@ export const actionOptionConfig: Readonly<ValueChangeConfig[]> = [
 export const collectChange = async (target: HTMLElement, vcc?: readonly ValueChangeConfig[]): Promise<ValueChange> => {
 	const c = target;
 	const form = c.closest("form");
-	const formData = new FormData(form);
+	const formData = new FormData(form ?? undefined);
 
 	let values: PrimitiveType[] = [];
 	let path = "";
@@ -126,7 +126,7 @@ export const collectChange = async (target: HTMLElement, vcc?: readonly ValueCha
 			} else if (cfg.overwrite) {
 				values = cfg.overwrite(values);
 			} else if (cfg.transform) {
-				values = values.map((v) => cfg.transform(v));
+				values = values.map((v) => cfg.transform!(v));
 			}
 			break
 		}
@@ -143,7 +143,7 @@ export function applyValueChange<T>(obj: T, changes: ValueChange[]): T {
 	const clone = cloneDeep(obj);
 	for (const change of changes) {
 		// create empty object to hold value
-		let cur: KVRecord = clone;
+		let cur: KVRecord = clone as unknown as KVRecord;
 		for (const p of toPath(change.path).slice(0, -1)) {
 			if (!(p in cur)) {
 				cur[p] = {};

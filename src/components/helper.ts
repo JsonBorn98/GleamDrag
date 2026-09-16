@@ -20,13 +20,13 @@ export class MessageTarget {
 
 	constructor(event: string) {
 		this.event = event
-		globalThis.addEventListener(this.event, (event: CustomEvent<string>) => {
-			this.onMessage(JSON.parse(event.detail) as any as GenericFunction)
+		globalThis.addEventListener(this.event, (event: Event) => {
+			this.onMessage(JSON.parse((event as CustomEvent<string>).detail) as any as GenericFunction)
 		})
 	}
 
 	onMessage(msg: GenericFunction) {
-		const fn = this[msg.name as any] as any
+		const fn = (this as Record<string, any>)[msg.name]
 		if (typeof fn !== 'function') {
 			rootLog.E("method %s not found", msg.name)
 			return

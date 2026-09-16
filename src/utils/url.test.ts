@@ -12,7 +12,7 @@ describe('test url fixer', () => {
       "http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/win-64"
     ]
     for (const c of urls) {
-      assert.deepEqual(fixer.fix(c).toString(), c)
+      assert.deepEqual(fixer.fix(c)!.toString(), c)
     }
   })
 
@@ -81,7 +81,7 @@ describe('test url fixer', () => {
       ]
     ]
     for (const c of urls) {
-      const fixed = fixer.fix(c[0]).toString()
+      const fixed = fixer.fix(c[0])!.toString()
       rootLog.VVV("origin: ", c[0], "fixed:", fixed, " expected: ", c[1], " same: ", fixed == c[1])
       assert.deepEqual(fixed, c[1])
     }

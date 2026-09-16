@@ -6,7 +6,7 @@ export function uuidv4() {
 	return v4()
 }
 
-export function titleCase(s: string): string {
+export function titleCase(s: string): string | undefined {
 	if (!s.length) {
 		return
 	}

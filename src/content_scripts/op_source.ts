@@ -44,7 +44,7 @@ export class OpSource {
 
     static fromNode(target: Node): OpSource {
         const os = new OpSource()
-        const win = target.ownerDocument.defaultView
+        const win = target.ownerDocument!.defaultView!
 
         if (target instanceof win.HTMLAnchorElement) {
             os._type = ContextType.link
@@ -55,9 +55,9 @@ export class OpSource {
             os._src = target.src
             os._imgSrc = os._src
             os._text = target.title
-        } else if (win.getSelection().toString().length > 0) {
+        } else if (win.getSelection()!.toString().length > 0) {
             os._type = ContextType.selection
-            os._text = win.getSelection().toString()
+            os._text = win.getSelection()!.toString()
         } else if (target instanceof win.Text) {
             os._type = ContextType.selection
             os._text = target.textContent
@@ -79,7 +79,7 @@ export class OpSource {
         }
 
         if (os.type === ContextType.selection) {
-            let protocols = []
+            let protocols: string[] = []
             if (config) {
                 protocols = Array.from(config.smartURL.protocols)
             }

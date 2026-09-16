@@ -62,8 +62,8 @@ export class RequestResolver {
 
 		return new Map([
 			["s", query],
-			["d", result.domain], // top level domain + 1
-			["h", result.hostname], // host name
+			["d", result.domain as string], // top level domain + 1
+			["h", result.hostname as string], // host name
 			["x", `site:${merged.hostname} ${query}`], // search on site
 		])
 	}

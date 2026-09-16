@@ -93,7 +93,7 @@ class TemplateParser {
 		if (this.pos >= this.buf.length) {
 			throw new Error("position out of bound")
 		}
-		return this.buf[this.pos]
+		return this.buf[this.pos]!
 	}
 
 	hasMore() {

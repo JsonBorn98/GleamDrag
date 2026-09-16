@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill';
-import { ActionConfig, Configuration, ContextType, ContextDataType } from "../config/config";
+import { ActionConfig, Configuration, ContextType, ContextDataType, type PlainConfiguration } from "../config/config";
 import type { ExecuteContext } from './context';
 import type { ExecuteArgs } from "../message/message";
 import { ExtensionStorageKey, type ExtensionStorage } from '../types';
@@ -7,7 +7,7 @@ import { defaultVolatileState } from '../state/state';
 
 
 export async function buildExecuteContextFromMessageSender(args: ExecuteArgs, sender: browser.Runtime.MessageSender): Promise<Readonly<ExecuteContext>> {
-	return buildExecuteContext(args, sender.tab, sender.frameId)
+	return buildExecuteContext(args, sender.tab!, sender.frameId!)
 }
 
 
@@ -15,7 +15,7 @@ export async function buildExecuteContext(args: ExecuteArgs, tab: browser.Tabs.T
 	const storage = (await browser.storage.local.get(ExtensionStorageKey.userConfig)) as ExtensionStorage
 	const permissions = (await browser.permissions.getAll())
 	const state = await defaultVolatileState()
-	const config = new Configuration(storage.userConfig)
+	const config = new Configuration(storage.userConfig as PlainConfiguration)
 	const urlObj = new URL(args.url)
 	return {
 		data: args.data,
@@ -26,7 +26,7 @@ export async function buildExecuteContext(args: ExecuteArgs, tab: browser.Tabs.T
 		endPosition: args.endPosition,
 		action: new ActionConfig(args.action),
 		frameId: frameId,
-		tabURL: tab.url,
+		tabURL: tab.url!,
 		hostname: urlObj.hostname,
 		config: config,
 		tab,
@@ -82,7 +82,7 @@ export function primaryContextData(ctx: ExecuteContext): string {
 	}
 }
 
-export async function handlePreferContextData(ctx: ExecuteContext, defaultCallback: (ExecuteContext) => Promise<void>, callbacks?: { [key in ContextDataType]?: (ExecuteContext) => Promise<void> }) {
+export async function handlePreferContextData(ctx: ExecuteContext, defaultCallback: (ctx: ExecuteContext) => Promise<void>, callbacks?: { [key in ContextDataType]?: (ctx: ExecuteContext) => Promise<void> }) {
 
 	for (const p of ctx.action.config.preferDataTypes) {
 		if (callbacks && callbacks[p]) {

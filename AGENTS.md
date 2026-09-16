@@ -15,14 +15,17 @@ GleamDrag is a Manifest V3 browser extension written in TypeScript and Svelte. R
 
 The repository pins dependencies through `bun.lock` and CI (`bun install --frozen-lockfile`), so use Bun rather than another package manager (see ADR 0001 in `docs/adr/`).
 
+The build is being migrated from the legacy Makefile/rollup chain to WXT (see `wxt.config.ts`); both chains coexist until the dual MV3 artifacts are verified in real browsers and the legacy scripts are deleted.
+
 - `bun install` installs the locked dependencies.
-- `make ext-firefox` builds and validates a debug Firefox package.
-- `make ext-chromium` builds the Chromium variant.
-- `BUILD_PROFILE=prod make ext-firefox` creates a production package; artifacts appear under `build/`.
-- `make build-watch TARGET=firefox` rebuilds on source changes.
-- `make test` builds the `firefox-test` target, launches Firefox, and runs the browser-based Mocha suite.
-- `bun x tsc --noEmit` performs a standalone TypeScript check.
-- `make clean` removes generated build output.
+- `bun run build` builds Firefox and Chromium MV3 artifacts with WXT (`.output/firefox-mv3`, `.output/chromium-mv3`).
+- `bun run zip` builds both targets and zips them (`.output/gleamdrag-<version>-<target>.zip`).
+- `bun run build:test` builds the test artifact (WXT `GLEAMDRAG_TEST_BUILD=1`: ships the in-extension test page and the Firefox-only CSP override).
+- `node scripts/test_wxt.mjs` builds nothing itself; it launches web-ext against `.output/firefox-mv3` and runs the in-extension Mocha suite over WebSocket (build first with `bun run build:test` plus `GLEAMDRAG_WS_SERVER`).
+- `bun x tsc --noEmit` performs a standalone TypeScript check (strict; extends `.wxt/tsconfig.json`).
+- `make ext-firefox` / `make ext-chromium` build via the legacy rollup chain (`build/<target>/dist`) — legacy, removed after the WXT artifacts pass real-browser verification.
+- `make test` runs the legacy in-extension suite; `bun run verify:exit-code` verifies the exit-code contract through it.
+- `make clean` removes legacy build output; `rm -rf .output` removes WXT output.
 
 ## Coding Style & Naming Conventions
 

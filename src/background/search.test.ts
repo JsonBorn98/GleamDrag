@@ -21,7 +21,7 @@ describe("test browser search", () => {
 			})
 
 		} finally {
-			closeTab(t.id, 1000)
+			closeTab(t.id!, 1000)
 		}
 	})
 })

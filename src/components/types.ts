@@ -53,13 +53,13 @@ export interface GenericFunction {
 }
 
 export interface IndicatorInterface {
-	show(radius: number, pos: Position)
-	hide()
+	show(radius: number, pos: Position): void
+	hide(): void
 }
 
 export interface PromptInterface {
-	show(text: string)
-	hide()
+	show(text: string): void
+	hide(): void
 }
 
 export interface MenuInterface {

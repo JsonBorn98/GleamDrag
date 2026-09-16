@@ -41,7 +41,7 @@ export class DirectionChain {
         if (this.s.length == 0) {
             return null
         }
-        return this.s.pop()
+        return this.s.pop() ?? null
     }
 
     empty(): boolean {

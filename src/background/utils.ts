@@ -106,7 +106,7 @@ export async function buildDownloadableURL(ctx: ExecuteContext): Promise<URL> {
         case ContextType.selection:
             const encoder = new TextEncoder()
             const buf = encoder.encode(primaryContextData(ctx))
-            return bufferToObjectURL(buf)
+            return bufferToObjectURL(buf.buffer as ArrayBuffer)
         case ContextType.image:
             const url = new URL(primaryContextData(ctx))
             switch (url.protocol) {
@@ -116,7 +116,10 @@ export async function buildDownloadableURL(ctx: ExecuteContext): Promise<URL> {
                 case "http:":
                 case "https:":
                     return url
+                // Fallthrough to link (an http(s) image shares the link
+                // handling below): filename comes from the same URL.
             }
+            return url
         case ContextType.link:
             return new URL(primaryContextData(ctx))
     }
@@ -128,7 +131,7 @@ export function guessFilenameFromURL(url: URL): string | null {
         .filter(p => p.length > 0)
 
     if (parts.length > 0) {
-        return parts[parts.length - 1]
+        return parts[parts.length - 1] ?? null
     }
 
     return url.hostname

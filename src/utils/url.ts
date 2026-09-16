@@ -23,13 +23,13 @@ const httpPrefixes = [
 ]
 
 
-function matchRe(s: string, pat: RegExp): boolean {
+function matchRe(s: string, pat: RegExp): boolean | null {
     const r = s.match(pat)
     return r && r.length > 0
 }
 
 const log = rootLog.subLogger(LogLevel.VVV, "urlFixer")
-const urlLRU = new TinyLRU<string, null | URL>()
+const urlLRU = new TinyLRU<string | undefined, null | URL>()
 
 export class URLFixer {
 
@@ -56,6 +56,7 @@ export class URLFixer {
         if (parse(url.hostname).isIcann) {
             return true
         }
+        return false
     }
 
     private internalFix(urlLike?: string): URL | null {

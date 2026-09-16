@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill';
 import buildInfo from "../build_info";
-import { configBroadcast, Configuration } from "../config/config";
+import { configBroadcast, Configuration, type PlainConfiguration } from "../config/config";
 import { RuntimeMessageName, type RuntimeMessage } from "../message/message";
 import { ExtensionStorageKey, type ExtensionStorage } from "../types";
 import { captureError } from '../utils/error';
@@ -65,12 +65,12 @@ browser.runtime.onMessage.addListener(async (m: any, sender: browser.Runtime.Mes
         }
         case RuntimeMessageName.contextScriptLoaded: {
             if (sender.tab) {
-                return onContentScriptLoaded(sender.tab.id, sender.frameId)
+                return onContentScriptLoaded(sender.tab.id!, sender.frameId)
             }
             return
         }
         case RuntimeMessageName.closeCurrentTab: {
-            await browser.tabs.remove(sender.tab.id)
+            await browser.tabs.remove(sender.tab!.id!)
             return
         }
         default: {
@@ -84,14 +84,16 @@ browser.runtime.onMessage.addListener(async (m: any, sender: browser.Runtime.Mes
 
 browser.storage.local.onChanged.addListener(async () => {
     const storage = (await browser.storage.local.get(ExtensionStorageKey.userConfig)) as ExtensionStorage
-    const config = new Configuration(storage.userConfig)
+    const config = new Configuration(storage.userConfig as PlainConfiguration | undefined)
     configBroadcast.notify(config)
 })
 
-browser.contextMenus.onClicked.addListener(onMenuItemClick)
+browser.contextMenus.onClicked.addListener(onMenuItemClick as (info: browser.Menus.OnClickData, tab: browser.Tabs.Tab | undefined) => void)
 
 async function openMocha() {
-    const url = new URL(browser.runtime.getURL("test/mocha.html"))
+    // WXT ships the test page as a top-level unlisted page (test.html); the
+    // legacy rollup chain nested it at test/mocha.html.
+    const url = new URL(browser.runtime.getURL("test.html"))
 
     try {
         const res = await fetch(url)

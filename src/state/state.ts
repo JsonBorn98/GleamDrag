@@ -42,7 +42,7 @@ export class LocalStorageBackend implements VolatileState {
 			log.VVV("skip save, dirty: ", this.dirty, "force: ", force)
 			return
 		}
-		const obj = {}
+		const obj: Record<string, unknown> = {}
 		obj[this.storageKey] = Array.from(this.data.entries())
 		await browser.storage.local.set(obj)
 		this.dirty = false

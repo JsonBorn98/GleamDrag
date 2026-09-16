@@ -24,10 +24,10 @@ export function polar2cartesian(
 	offset?: number[]
 ) {
 	const [x, y] = offset ? offset : [0, 0];
-	return [r * Math.cos(theta) + x, r * Math.sin(theta) + y];
+	return [r * Math.cos(theta) + x!, r * Math.sin(theta) + y!];
 }
 
-export function degToRad(degrees) {
+export function degToRad(degrees: number) {
 	return degrees * (Math.PI / 180);
 }
 
@@ -124,7 +124,7 @@ export async function rebuildMenu(svg: SVGSVGElement, opt: MenuOptions) {
 	{
 		const gs = []
 		for (let i = 0; i < opt.items.length; i++) {
-			const g = await createMenuItem(opt.items[i], angleUnit * i);
+			const g = await createMenuItem(opt.items[i]!, angleUnit * i);
 			gs.push(g)
 		}
 		svg.append(...gs);
@@ -227,7 +227,7 @@ export async function rebuildMenu(svg: SVGSVGElement, opt: MenuOptions) {
 		}
 		{
 			try {
-				const parser = new document.defaultView.DOMParser();
+				const parser = new document.defaultView!.DOMParser();
 				const parseDoc = parser.parseFromString(
 					item.html,
 					"text/html"
@@ -242,8 +242,8 @@ export async function rebuildMenu(svg: SVGSVGElement, opt: MenuOptions) {
 					center
 				);
 				const image = document.createElementNS(SVG_NAMESPACE, "image");
-				image.setAttribute("x", `${iconPos[0] - opt.iconSize / 2}`);
-				image.setAttribute("y", `${iconPos[1] - opt.iconSize / 2}`);
+				image.setAttribute("x", `${iconPos[0]! - opt.iconSize / 2}`);
+				image.setAttribute("y", `${iconPos[1]! - opt.iconSize / 2}`);
 				image.setAttribute("width", `${opt.iconSize}`);
 				image.setAttribute("height", `${opt.iconSize}`);
 

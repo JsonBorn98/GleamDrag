@@ -49,7 +49,7 @@ describe('test variable substitute', () => {
 		]
 
 		for (const [s, expected] of cases) {
-			const template = new VarSubstituteTemplate(s)
+			const template = new VarSubstituteTemplate(s!)
 			const result = template.substitute(m)
 			assert.deepEqual(result, expected)
 		}

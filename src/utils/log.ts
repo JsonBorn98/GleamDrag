@@ -8,7 +8,7 @@ function buildTag(tag: string, parentTag: string): string {
 }
 
 export class Logger {
-	private parent: Logger = null
+	private parent: Logger | null = null
 	private tag: string | null = null
 	private level: LogLevel
 	private jsonify: boolean
@@ -20,7 +20,7 @@ export class Logger {
 	}
 
 	subLogger(level: LogLevel, tag: string): Logger {
-		const log = new Logger(level, buildTag(tag, this.tag))
+		const log = new Logger(level, buildTag(tag, this.tag!))
 		log.parent = this
 		return log
 	}

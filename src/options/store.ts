@@ -22,7 +22,7 @@ export const userConfig = writable({} as PlainConfiguration, (set) => {
 		const storage = (await browser.storage.local.get(
 			ExtensionStorageKey.userConfig
 		)) as ExtensionStorage;
-		let uc = defaultTo(storage.userConfig, {})
+		let uc = defaultTo(storage.userConfig, {}) as PlainConfiguration
 		fillDefaultValue(uc)
 		set(uc)
 	})()

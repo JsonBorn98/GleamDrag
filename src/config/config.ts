@@ -246,7 +246,7 @@ export class CommandRequest {
 	constructor(cfg: PlainCommandRequest) {
 		this.cfg = cloneDeep(cfg)
 
-		const urlObj = new URL(cfg.url)
+		const urlObj = new URL(cfg.url!)
 
 		this._query = defaultTo(cfg.query, {})
 		for (const [k, v] of urlObj.searchParams) {
@@ -659,8 +659,8 @@ export class BroadcastEventTarget<T> {
 	}
 
 	addListener(cb: (cfg: T) => any) {
-		const wrap = (event: CustomEvent<T>) => {
-			cb(event.detail)
+		const wrap: EventListener = (event: Event) => {
+			cb((event as CustomEvent<T>).detail)
 		}
 		this.callbacks.push({ origin: cb, wrap: wrap })
 		this.target.addEventListener("data", wrap)

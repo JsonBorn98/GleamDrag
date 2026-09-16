@@ -25,7 +25,7 @@ if (suite === "fixture") {
 }
 
 if (webSocketAvailable()) {
-	ws.addEventListener("open", () => {
+	ws!.addEventListener("open", () => {
 		mocha.run()
 	})
 } else {

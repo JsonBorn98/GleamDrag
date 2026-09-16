@@ -17,11 +17,11 @@ describe("test executor", async () => {
 
     it("open tab", async () => {
         const ctx = await blankExecuteContext()
-        let t: browser.Tabs.Tab
+        let t: browser.Tabs.Tab | undefined
         try {
             t = await executor.openTab(ctx, "http://example.com")
         } finally {
-            t && closeTab(t?.id)
+            t && closeTab(t.id!)
         }
     })
 
@@ -55,7 +55,7 @@ describe("test executor", async () => {
         try {
             downloadId = await executor.downloadHandler(ctx)
         } finally {
-            browser.downloads.removeFile(downloadId)
+            browser.downloads.removeFile(downloadId!)
         }
     })
 
@@ -78,7 +78,7 @@ describe("test executor", async () => {
         }
 
         assert.equal(logged.length, 1, "a missing script should be reported once")
-        assert.include(String(logged[0][0]), "absent", "the report should name the missing script")
+        assert.include(String(logged[0]![0]), "absent", "the report should name the missing script")
     })
 
     it("script action does not fall through to the unknown-command branch", async () => {
@@ -89,7 +89,7 @@ describe("test executor", async () => {
             action: new ActionConfig({ command: CommandKind.script, config: { scriptId: "demo" } }),
         }
 
-        let sent: RuntimeMessage<RuntimeMessageName.executeScript> | null = null
+        let sent = null as RuntimeMessage<RuntimeMessageName.executeScript> | null
         const originalSendMessage = browser.tabs.sendMessage
         browser.tabs.sendMessage = (async (tabId: number, message: RuntimeMessage<RuntimeMessageName.executeScript>) => {
             sent = message

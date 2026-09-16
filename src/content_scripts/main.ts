@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill';
-import { CompatibilityStatus, configBroadcast, Configuration, LogLevel } from '../config/config';
+import { CompatibilityStatus, configBroadcast, Configuration, LogLevel, type PlainConfiguration } from '../config/config';
 import { buildRuntimeMessage, RuntimeMessageName, type RuntimeMessage } from '../message/message';
 import { ExtensionStorageKey, type ExtensionStorage } from '../types';
 import { rootLog } from '../utils/log';
@@ -43,7 +43,9 @@ async function dispatcher(m: any) {
 
 function setupComponents() {
     const s = document.createElement("script")
-    s.src = browser.runtime.getURL("components/main.js")
+    // WXT ships the custom-element bundle as a top-level unlisted script
+    // (components.js); the legacy rollup chain nested it at components/main.js.
+    s.src = browser.runtime.getURL("components.js")
     document.body.appendChild(s)
     // prevent script exposes to web page
     setTimeout(() => { s.remove() }, 0)
@@ -79,7 +81,7 @@ async function setup() {
 async function loadConfig() {
     log.VVV("load user config from storage")
     const storage = (await browser.storage.local.get()) as ExtensionStorage
-    const config = new Configuration(storage.userConfig)
+    const config = new Configuration(storage.userConfig as PlainConfiguration)
     configBroadcast.notify(config)
 
     let status = CompatibilityStatus.enable
@@ -93,11 +95,11 @@ async function loadConfig() {
     log.V("location: ", location.href, "compatible status: ", status)
 
     if (status === CompatibilityStatus.disable) {
-        controller.stop()
+        controller!.stop()
         return
     }
 
-    controller.start(status)
+    controller!.start(status)
 }
 
 
@@ -108,7 +110,7 @@ async function main() {
     catch (error) {
         log.E("failed to setup extension: ", window.self);
         log.E(error);
-        log.E(error.stack)
+        log.E((error as Error).stack)
     }
 }
 

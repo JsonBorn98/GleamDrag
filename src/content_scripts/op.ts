@@ -43,11 +43,11 @@ export function buildOpPosition(e: DragEvent, frameX: number = 0, frameY: number
 }
 
 export class Op {
-    type: OpType
-    source: OpSource
-    positions: OpPositions
-    data: Map<string, string>
-    modifierKeys: Set<ModifierKey>
+    type!: OpType
+    source!: OpSource
+    positions!: OpPositions
+    data!: Map<string, string>
+    modifierKeys!: Set<ModifierKey>
 
     private constructor() { }
 
@@ -111,18 +111,20 @@ export class OpExecutor {
     dirChain: DirectionChain = new DirectionChain()
     selectedMenuId = ""
 
-    timerId = 0
+    // DOM typings give setTimeout a number; the Node @types override it with
+    // Timeout. The extension runtime only ever sees the browser one.
+    timerId: number = 0
 
     constructor() {
         this.state = new StateManager()
         this.source = null
-        window.addEventListener(forwardOpEventName, (event: CustomEvent<string>) => {
+        window.addEventListener(forwardOpEventName, ((event: CustomEvent<string>) => {
             this.applyOp(Op.fromPlainObject(JSON.parse(event.detail)))
-        })
-        window.addEventListener(EventType.MenuSelectedId, (e: CustomEvent<string>) => {
+        }) as EventListener)
+        window.addEventListener(EventType.MenuSelectedId, ((e: CustomEvent<string>) => {
             this.selectedMenuId = e.detail
             log.VVV("new menu id: ", this.selectedMenuId)
-        })
+        }) as EventListener)
         configBroadcast.addListener(this.updateConfig.bind(this))
     }
 
@@ -155,7 +157,7 @@ export class OpExecutor {
     public applyOp(op: Op): OpResult {
         if (window.top != window.self) {
             if (window.frameElement) {
-                window.top.dispatchEvent(new CustomEvent(forwardOpEventName, { detail: JSON.stringify(op.toPlainObject()) }))
+                window.top!.dispatchEvent(new CustomEvent(forwardOpEventName, { detail: JSON.stringify(op.toPlainObject()) }))
                 return defaultOpResult
             }
 
@@ -174,7 +176,7 @@ export class OpExecutor {
         this.timerId = setTimeout(() => {
             log.V("reset because of timeout")
             this.reset()
-        }, this.timerTimeout)
+        }, this.timerTimeout) as unknown as number
 
 
         switch (op.type) {
@@ -208,7 +210,7 @@ export class OpExecutor {
             return
         }
 
-        const g = this.source.summary()
+        const g = this.source!.summary()
         const mode = this.currentMode()
         const actions = this.filterActionConfig(g)
 
@@ -239,10 +241,10 @@ export class OpExecutor {
 
             if (mode === OperationMode.circleMenu) {
                 if (this.selectedMenuId.length > 0) {
-                    action = actions.find(a => a.id === this.selectedMenuId)
+                    action = actions.find(a => a.id === this.selectedMenuId) ?? null
                 }
             } else if (actions.length > 0) {
-                action = actions[0]
+                action = actions[0]!
             }
 
             // TODO: avoid update prompt every time
@@ -298,7 +300,7 @@ export class OpExecutor {
 
         if (mode != OperationMode.chain) {
             const dir = angleToDirection(mode, getAngle(this.startPos, this.endPos))
-            const latest = new ChainItem(dir, this.startPos, this.endPos)
+            const latest = new ChainItem(dir!, this.startPos, this.endPos)
             this.dirChain.overwrite(latest)
             return
         }
@@ -308,7 +310,7 @@ export class OpExecutor {
 
         if (!latest) {
             const dir = angleToDirection(mode, getAngle(this.startPos, this.endPos))
-            latest = new ChainItem(dir, this.startPos, this.endPos)
+            latest = new ChainItem(dir!, this.startPos, this.endPos)
         }
 
         if (Math.hypot(latest.end.x - this.endPos.x, latest.end.y - this.endPos.y) > 3) {
@@ -316,7 +318,7 @@ export class OpExecutor {
             if (latest.dir == nextDir) {
                 latest.end = cloneDeep(this.endPos)
             } else {
-                newChain = new ChainItem(nextDir, latest.end, this.endPos)
+                newChain = new ChainItem(nextDir!, latest.end, this.endPos)
             }
         }
 
@@ -387,7 +389,7 @@ export class OpExecutor {
 
         try {
 
-            const g = this.source.summary()
+            const g = this.source!.summary()
 
             log.VV('before post command', {
                 sourceTarget: this.source,
@@ -425,11 +427,11 @@ export class OpExecutor {
         const mode = this.currentMode()
         if (mode === OperationMode.circleMenu || mode === OperationMode.gridMenu) {
             const id = this.selectedMenuId
-            action = this.config.actions.find(c => c.id === id)
+            action = this.config.actions.find(c => c.id === id) ?? null
         } else {
             const actions = this.filterActionConfig(g)
             if (actions.length) {
-                action = actions[0]
+                action = actions[0]!
             }
         }
 
@@ -512,7 +514,7 @@ export class OpExecutor {
             throw new Error("require config")
         }
 
-        const g = this.source.summary()
+        const g = this.source!.summary()
 
         if (!g.contextTypes.length) {
             throw new Error("require context type")

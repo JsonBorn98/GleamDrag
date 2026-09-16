@@ -75,7 +75,7 @@ export async function onMenuItemClick(info: browser.Menus.OnClickData, tab: brow
 		endPosition: defaultPosition,
 	}
 
-	const ctx = await buildExecuteContext(args, tab, info.frameId)
+	const ctx = await buildExecuteContext(args, tab, info.frameId!)
 	const executor = new Executor();
 	executor.execute(ctx)
 }

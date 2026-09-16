@@ -80,7 +80,7 @@ directionMapping.chain = directionMapping.normal
 
 export function angleToDirection(mode: OperationMode, angle: number): Direction | null {
 
-    let rangeMapping: RangeMapping[]
+    let rangeMapping: RangeMapping[] | undefined
     if (directionMapping[mode]) {
         rangeMapping = directionMapping[mode]
     }
@@ -135,11 +135,11 @@ export class TinyLRU<K, V> {
         
         if (this.kv.length > TinyLRU.SIZE) {
             let evicted_index = 0
-            let cnt = this.kv[evicted_index][2]
+            let cnt = this.kv[evicted_index]![2]
             for (let i = 1; i < this.kv.length; i++) {
-                if (this.kv[i][2] < cnt) {
+                if (this.kv[i]![2] < cnt) {
                     evicted_index = i
-                    cnt = this.kv[evicted_index][2]
+                    cnt = this.kv[evicted_index]![2]
                 }
             }
             this.kv = this.kv.splice(evicted_index, 1)

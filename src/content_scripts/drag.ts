@@ -46,15 +46,15 @@ export class DragController {
             return
         }
         for (const n of ["dragstart", "dragover", "dragenter", 'dragleave', "drop", "dragend"]) {
-            this.eventSource.addEventListener(n, this.handler, {capture: true})
-            this.eventSource.addEventListener(n, this.handler, {capture: false})
+            this.eventSource.addEventListener(n, this.handler as unknown as EventListener, {capture: true})
+            this.eventSource.addEventListener(n, this.handler as unknown as EventListener, {capture: false})
         }
     }
 
     stop() {
         for (const n of ["dragstart", "dragover", "dragenter", 'dragleave', "drop", "dragend"]) {
-            this.eventSource.removeEventListener(n, this.handler, {capture: true});
-            this.eventSource.removeEventListener(n, this.handler, {capture: false});
+            this.eventSource.removeEventListener(n, this.handler as unknown as EventListener, {capture: true});
+            this.eventSource.removeEventListener(n, this.handler as unknown as EventListener, {capture: false});
         }
     }
 
@@ -253,7 +253,7 @@ export class DragController {
             type: type,
             source: source,
             position: buildOpPosition(e, this.frameX, this.frameY),
-            dt: e.dataTransfer
+            dt: e.dataTransfer!
         })
     }
 

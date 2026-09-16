@@ -17,7 +17,7 @@ function getRange(x: number, y: number): Range | null {
 			node, offset,
 		};
 	} else {
-		const { startContainer: node, startOffset: offset } = document.caretRangeFromPoint(x, y);
+		const { startContainer: node, startOffset: offset } = document.caretRangeFromPoint(x, y)!;
 		range = {
 			node, offset,
 		};
@@ -76,7 +76,7 @@ export class MiddleButtonSelector {
 			this.state = STATE_WORKING
 			this.x1 = e.clientX
 			this.y1 = e.clientY
-			const range = getRange(e.clientX, e.clientY);
+			const range = getRange(e.clientX, e.clientY)!;
 			this.se.setBaseAndExtent(range.node, range.offset, range.node, range.offset)
 		}
 	}
@@ -91,7 +91,7 @@ export class MiddleButtonSelector {
 
 	mousemove(e: MouseEvent) {
 		if (this.state === STATE_WORKING) {
-			const range = getRange(e.clientX, e.clientY)
+			const range = getRange(e.clientX, e.clientY)!
 			this.se.extend(range.node, range.offset)
 			e.preventDefault()
 		}

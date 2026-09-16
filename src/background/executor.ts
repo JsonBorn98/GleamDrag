@@ -70,14 +70,14 @@ export class Executor {
             case ContextType.image: {
 
                 async function copyImageSource() {
-                    browser.tabs.sendMessage(ctx.tab.id, buildRuntimeMessage(RuntimeMessageName.copy, ctx.data.imageSource))
+                    browser.tabs.sendMessage(ctx.tab.id!, buildRuntimeMessage(RuntimeMessageName.copy, ctx.data.imageSource))
                 }
 
                 handlePreferContextData(ctx, copyImageSource, { "image": this.copyImage, "imageSource": copyImageSource })
                 return
             }
             default: {
-                browser.tabs.sendMessage(ctx.tab.id, buildRuntimeMessage(RuntimeMessageName.copy, primaryContextData(ctx)))
+                browser.tabs.sendMessage(ctx.tab.id!, buildRuntimeMessage(RuntimeMessageName.copy, primaryContextData(ctx)))
                 return
             }
         }
@@ -106,7 +106,7 @@ export class Executor {
                     await new Promise(r => setTimeout(r, 50))
 
                     const query = primaryContextData(ctx)
-                    let engine = resolver.resolveEngine()
+                    let engine: string | undefined = resolver.resolveEngine()
                     if (engine === "") {
                         engine = undefined
                     }
@@ -115,7 +115,7 @@ export class Executor {
                     await searchTextViaBrowser({
                         query: query,
                         engine: engine,
-                        tabId: tabHoldingSearch.id,
+                        tabId: tabHoldingSearch!.id,
                     })
                     return
                 }
@@ -170,7 +170,7 @@ export class Executor {
 
         await browser.scripting.executeScript({
             target: {
-                tabId: tab.id
+                tabId: tab.id!
             },
             func: dumpFunc,
             args: [arg1]
@@ -185,7 +185,7 @@ export class Executor {
             return
         }
 
-        await browser.tabs.sendMessage(ctx.tab.id, buildRuntimeMessage(RuntimeMessageName.executeScript, {
+        await browser.tabs.sendMessage(ctx.tab.id!, buildRuntimeMessage(RuntimeMessageName.executeScript, {
             text: script.text,
             data: {
                 text: ctx.data.selection,
@@ -221,7 +221,7 @@ export class Executor {
             const tabs = await browser.tabs.query({
                 windowId: win.id
             })
-            return tabs[0];
+            return tabs[0]!;
         }
 
 
@@ -263,10 +263,10 @@ export class Executor {
         const tab = await browser.tabs.create(option);
         if (!ctx.action.config.activeTab) {
             if (ctx.action.config.tabPosition === TabPosition.next) {
-                ctx.state.backgroundTabIds = [...ctx.state.backgroundTabIds, tab.id]
+                ctx.state.backgroundTabIds = [...ctx.state.backgroundTabIds, tab.id!]
             }
             else if (ctx.action.config.tabPosition === TabPosition.after) {
-                ctx.state.backgroundTabIds = [tab.id, ...ctx.state.backgroundTabIds]
+                ctx.state.backgroundTabIds = [tab.id!, ...ctx.state.backgroundTabIds]
             }
         }
         return tab

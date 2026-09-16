@@ -26,7 +26,7 @@ describe("content script utils", () => {
 			},
 		]
 		for (const tt of testCases) {
-			let a = getAngle(tt.args[0], tt.args[1])
+			let a = getAngle(tt.args[0]!, tt.args[1]!)
 			assert.ok(tt.angle === a)
 		}
 	})
@@ -36,7 +36,7 @@ describe("content script utils", () => {
 
 		assert.ok(lru.get(1) === undefined)
 		assert.ok(lru.get(2) === undefined)
-		assert.ok(lru.get(undefined) === undefined)
+		assert.ok(lru.get(undefined as any) === undefined)
 
 		lru.put(1, 1)
 		lru.put(2, 2)

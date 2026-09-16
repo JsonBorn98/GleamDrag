@@ -11,7 +11,7 @@ const {
 // https://mochajs.org/api/reporters_json-stream.js.html
 class StreamReporter extends Mocha.reporters.HTML {
 
-	writeEvent: (any) => void
+	writeEvent: (event: any) => void
 
 	constructor(runner: Mocha.Runner, options?: Mocha.MochaOptions) {
 		super(runner, options)
@@ -44,13 +44,13 @@ class StreamReporter extends Mocha.reporters.HTML {
 		});
 	}
 
-	clean(test) {
+	clean(test: Mocha.Test) {
 		return {
 			title: test.title,
 			fullTitle: test.fullTitle(),
 			file: test.file,
 			duration: test.duration,
-			currentRetry: test.currentRetry(),
+			currentRetry: (test as any).currentRetry(),
 			speed: test.speed,
 			err: null,
 			stack: null
@@ -59,13 +59,14 @@ class StreamReporter extends Mocha.reporters.HTML {
 }
 
 export function webSocketAvailable() {
-	return ws && [WebSocket.OPEN, WebSocket.CONNECTING].includes(ws.readyState)
+	const states: number[] = [WebSocket.OPEN, WebSocket.CONNECTING]
+	return ws && states.includes(ws.readyState)
 }
 
 export async function closeInstance() {
 	const ids = (await browser.windows.getAll()).map(w => w.id)
 	for (const id of ids) {
-		await browser.windows.remove(id)
+		await browser.windows.remove(id!)
 	}
 }
 
@@ -95,7 +96,7 @@ mocha.setup({
 });
 
 mocha.reporter(StreamReporter, {
-	writeEvent: function (event) {
+	writeEvent: function (event: any) {
 		if (ws) {
 			ws.send(JSON.stringify(event))
 			const [type, _payload] = event

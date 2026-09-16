@@ -16,8 +16,9 @@ export function buildSearchEngineCommandRequest(name: string): PlainCommandReque
 }
 
 export function getBrowserSearchEngineName(req: PlainCommandRequest): string {
-	if (req.url === browserSearchEngineURL && typeof req.query.engine === "string") {
-		return req.query.engine
+	const query = req.query
+	if (req.url === browserSearchEngineURL && typeof query?.engine === "string") {
+		return query.engine
 	}
 	return ""
 }

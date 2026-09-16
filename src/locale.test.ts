@@ -1,6 +1,5 @@
 import { LocaleMessageHelper, localeMessageProxy } from "./locale"
-import chai from "chai"
-const assert = chai.assert
+import { assert } from "chai"
 
 describe("locale", () => {
 

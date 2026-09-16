@@ -16,12 +16,12 @@ describe("menu builder", () => {
 	it("polar2cartesian", () => {
 
 		const c30 = polar2cartesian(2, degToRad(30))
-		assert.closeTo(c30[0], Math.sqrt(3), 0.0001)
-		assert.closeTo(c30[1], 1, 0.0001)
+		assert.closeTo(c30[0]!, Math.sqrt(3), 0.0001)
+		assert.closeTo(c30[1]!, 1, 0.0001)
 
 		const c45 = polar2cartesian(2, degToRad(45))
-		assert.closeTo(c45[0], Math.sqrt(2), 0.001)
-		assert.closeTo(c45[1], Math.sqrt(2), 0.001)
+		assert.closeTo(c45[0]!, Math.sqrt(2), 0.001)
+		assert.closeTo(c45[1]!, Math.sqrt(2), 0.001)
 	})
 
 
