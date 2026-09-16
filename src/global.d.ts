@@ -9,7 +9,6 @@ type EnvVariable = {
 	webSocketServer: string
 	profile: string
 	target: string
-	testSuite: string
 }
 
 export declare global {

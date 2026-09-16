@@ -28,9 +28,6 @@ export default function (opts) {
 		profile,
 		websocketServer,
 		target,
-		// test-suite selection for the exit-code contract fixture ("fixture"
-		// registers the deliberately failing suite via ?suite= on the test page)
-		testSuite: process.env.BUILD_TEST_SUITE || "",
 	}
 
 	function getPlugins(entrypoint) {
