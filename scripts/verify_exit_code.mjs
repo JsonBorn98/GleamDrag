@@ -13,7 +13,7 @@
 // --test-suite injection) is verified by the Windows baseline ticket; the CI
 // leg belongs to the CI ticket.
 //
-// Usage: pnpm run verify:exit-code
+// Usage: bun run verify:exit-code
 
 import { spawn } from 'node:child_process'
 import { createServer } from 'node:net'

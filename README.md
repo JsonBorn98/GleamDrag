@@ -15,11 +15,11 @@ A good drag and drop extension that improve your browsing experience. Currently 
 
 ## How To Build
 
-To build extension, you need: node v16, pnpm v7, make, git
+To build extension, you need: node v24, bun v1.2+, make, git
 
 ```bash
 cd <project directory>
-pnpm install
+bun install
 make ext-firefox 
 make ext-chromium 
 ```

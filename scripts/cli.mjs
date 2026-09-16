@@ -16,9 +16,10 @@ const BUILD_SRC = mustEnv("BUILD_SRC", "./src")
 const BUILD_VERSION = mustEnv("BUILD_VERSION", "2.1.0")
 
 // web-ext is invoked as `node <repo>/node_modules/web-ext/bin/web-ext.js`
-// instead of `pnpm exec web-ext`: pnpm's ignored-builds precheck hijacks the
-// exit code, and a bare "pnpm" only resolves with a shell or an
-// extension-aware lookup.
+// rather than through a package-manager bin shim (`bun x web-ext`): the
+// direct node invocation needs no bin resolution, adds no precheck layer
+// that could eat the exit code, and is agnostic to which package manager
+// installed node_modules.
 const WEB_EXT_BIN = pathLib.join(
 	pathLib.dirname(fileURLToPath(import.meta.url)),
 	"..", "node_modules", "web-ext", "bin", "web-ext.js"

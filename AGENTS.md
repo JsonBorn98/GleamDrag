@@ -13,15 +13,15 @@ GleamDrag is a Manifest V3 browser extension written in TypeScript and Svelte. R
 
 ## Build, Test, and Development Commands
 
-The repository pins pnpm through `pnpm-lock.yaml` and CI, so use the documented Node 16/pnpm 7 toolchain rather than changing package managers.
+The repository pins dependencies through `bun.lock` and CI (`bun install --frozen-lockfile`), so use Bun rather than another package manager (see ADR 0001 in `docs/adr/`).
 
-- `pnpm install` installs the locked dependencies.
+- `bun install` installs the locked dependencies.
 - `make ext-firefox` builds and validates a debug Firefox package.
 - `make ext-chromium` builds the Chromium variant.
 - `BUILD_PROFILE=prod make ext-firefox` creates a production package; artifacts appear under `build/`.
 - `make build-watch TARGET=firefox` rebuilds on source changes.
 - `make test` builds the `firefox-test` target, launches Firefox, and runs the browser-based Mocha suite.
-- `pnpm exec tsc --noEmit` performs a standalone TypeScript check.
+- `bun x tsc --noEmit` performs a standalone TypeScript check.
 - `make clean` removes generated build output.
 
 ## Coding Style & Naming Conventions
