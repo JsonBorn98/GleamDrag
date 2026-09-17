@@ -8,44 +8,75 @@ on:
   pull_request:
     branches: [ main ]
 
+# Same command path as local (spec: CI 与本地跑同一条命令):
+#   bun run typecheck / test:vitest / verify:vitest-exit-code /
+#   verify:test-wxt / zip / test:wxt
+# The exit-code contract steps run the deliberately failing fixture and
+# assert a non-zero exit — a runner that swallows failures turns THESE
+# steps red, so the contract itself is verified on every push.
+
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
 
       - name: Cache Bun downloads
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
           restore-keys: ${{ runner.os }}-bun-
 
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Make
-        run: BUILD_PROFILE=prod make ext-firefox
+      - name: Type check
+        run: bun run typecheck
 
-      - name: Make Chromium
-        run: BUILD_PROFILE=prod make ext-chromium
+      - name: Vitest pure-logic suite
+        run: bun run test:vitest
 
-      - name: Archive artifacts
-        uses: actions/upload-artifact@v4
+      - name: Vitest exit-code contract (deliberate failure must exit non-zero)
+        run: bun run verify:vitest-exit-code
+
+      - name: Harness contract (watchdog + red stream, judgment path only)
+        run: bun run verify:test-wxt
+
+      - name: Build dual MV3 artifacts and zips
+        run: bun run zip
+        env:
+          BUILD_PROFILE: prod
+
+      - name: Upload artifact zips
+        uses: actions/upload-artifact@v7
         with:
-          name: artifacts
-          path: |
-            build/artifacts/*
+          name: extension-zips
+          path: .output/*.zip
+          if-no-files-found: error
+
+      # In-extension contract suite, Firefox leg only (spec: the Playwright
+      # Chromium leg stays local/on-demand — CI does not pass itself off as
+      # three-browser acceptance). The runner image ships Firefox at
+      # /usr/bin/firefox; detectFirefoxBinary() only probes Windows paths,
+      # so the leg needs the explicit override. xvfb-run provides the
+      # display for the headed Firefox the suite's end-of-run window close
+      # (closeInstance → Firefox quits → web-ext follows) depends on.
+      - name: In-extension contract suite (Firefox via web-ext)
+        run: xvfb-run --auto-servernum bun run test:wxt --engine firefox
+        env:
+          GLEAMDRAG_FIREFOX_BIN: /usr/bin/firefox
 
   release:
     name: Create release and upload packages
@@ -58,9 +89,9 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
-          name: artifacts
+          name: extension-zips
           path: artifacts/
 
       - name: Display structure of downloaded files
@@ -69,7 +100,7 @@ jobs:
         shell: bash
 
       - name: Release on tag
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: true
