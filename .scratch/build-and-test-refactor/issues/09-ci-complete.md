@@ -6,7 +6,7 @@ Claimed-at: 2026-09-17T04:07:08.474Z
 
 **阻塞于.** 05, 06, 07, 08
 
-**状态.** claimed
+**状态.** resolved
 
 - [ ] CI 一次推送跑齐：install → 类型检查 → Vitest → 双构建 → Firefox 扩展内套件
 - [ ] 产物 zip 上传 artifact
