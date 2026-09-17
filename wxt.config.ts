@@ -2,10 +2,10 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { defineConfig } from "wxt";
 
-// Mirrors scripts/gen_manifest.mjs: browser differences (Firefox-only
-// permissions, gecko id/min-version) move here; background service_worker vs
+// The single manifest source: browser differences (Firefox-only
+// permissions, gecko id/min-version) live here; background service_worker vs
 // scripts and the test-only CSP override are WXT-generated per target.
-// No second hand-written manifest generator — this file is the only one.
+// No hand-written manifest generator — this file is the only one.
 
 // Single version source: package.json feeds both the manifest version and
 // the zip name ({{version}} picks up the manifest version).
@@ -13,22 +13,22 @@ const packageJson = JSON.parse(readFileSync(new URL("./package.json", import.met
 	version: string;
 };
 const BUILD_VERSION = process.env.BUILD_VERSION ?? packageJson.version;
-// debug|prod parity with the legacy --profile flag (scripts/cli.mjs).
+// debug|prod parity with the legacy --profile flag.
 const BUILD_PROFILE = process.env.BUILD_PROFILE ?? "debug";
 
-// Test builds mirror the legacy firefox-test target: the in-extension test
+// Test builds (GLEAMDRAG_TEST_BUILD=1): the in-extension test
 // page is bundled and (Firefox-only) the CSP override lets mocha talk to an
 // insecure websocket (https://bugzilla.mozilla.org/show_bug.cgi?id=1797086).
 const isTestBuild = () => process.env.GLEAMDRAG_TEST_BUILD === "1";
 
-// src/build_info.ts contract (__ENV / __BUILD_PROFILE were rollup replace
-// injections; vite define is the WXT-chain equivalent).
+// src/build_info.ts contract (__ENV / __BUILD_PROFILE); vite define
+// injects them.
 function buildEnv(browser: string) {
 	return {
 		commitId: execFileSync("git", ["rev-parse", "--short", "HEAD"], { encoding: "utf8" }).trim(),
 		date: new Date().toISOString(),
 		nodeVersion: process.version,
-		// The rollup chain reported rollup.VERSION; this chain builds with vite.
+		// Historical parity: the pre-WXT chain reported its build tool version.
 		buildToolVersion: "vite",
 		os: process.platform,
 		profile: BUILD_PROFILE,
@@ -51,21 +51,20 @@ export default defineConfig({
 	// Test builds swap in public-test/ so mocha/chai ship only there; the
 	// normal public/ carries no test assets.
 	publicDir: isTestBuild() ? "public-test" : "public",
-	// The test entrypoint ships only in test builds (legacy firefox-test
-	// target); normal artifacts exclude it. filterEntrypoints overrides the
+	// The test entrypoint ships only in test builds; normal artifacts exclude
+	// it. filterEntrypoints overrides the
 	// per-entrypoint include/exclude, so the test entry sets none.
 	filterEntrypoints: isTestBuild() ? undefined : ["background", "content", "components", "options"],
 	zip: {
-		// gleamdrag-<version>-<target>.zip mirrors the legacy artifact name
-		// (scripts/cli.mjs `gleamdrag-${BUILD_VERSION}-${target}.zip`).
+		// gleamdrag-<version>-<target>.zip keeps the historical artifact
+		// name (`gleamdrag-${BUILD_VERSION}-${target}.zip`).
 		artifactTemplate: "{{name}}-{{version}}-{{browser}}.zip",
 		// Firefox store upload is out of scope (spec); no sources zip.
 		zipSources: false,
 	},
 	hooks: {
-		// gen_manifest.mjs wrote browser_style: true for BOTH targets; WXT
-		// only emits it for firefox. Chrome ignores the field, but parity
-		// with the legacy manifest is the migration contract. The options
+		// browser_style: true for BOTH targets (historical parity; Chrome
+		// ignores the field). WXT only emits it for firefox. The options
 		// entrypoint ships in every build, so options_ui is always set here.
 		"build:manifestGenerated": (_wxt, manifest) => {
 			if (manifest.options_ui == null) return;
@@ -97,8 +96,7 @@ export default defineConfig({
 			permissions.push("contextualIdentities", "cookies");
 		}
 
-		// Test-only CSP override, Firefox-only — gen_manifest.mjs
-		// contentSecurityPolicy() equivalence.
+		// Test-only CSP override, Firefox-only.
 		const content_security_policy = isFirefox && isTest
 			? { extension_pages: "script-src 'self'" }
 			: undefined;

@@ -9,8 +9,8 @@
 //      and the output names the failing fixture test
 //   3. watchdog: an engine leg that dies before any "end" (no events at
 //      all) finishes non-zero within the timeout instead of hanging —
-//      the acceptance item from ticket 03's retro; the legacy harness
-//      (cli.mjs waitTestComplete) would wait forever and squat the port.
+//      the acceptance item from ticket 03's retro; a pre-watchdog
+//      harness (waitTestComplete) would wait forever and squat the port.
 //
 // Usage: node scripts/verify_test_wxt.mjs
 

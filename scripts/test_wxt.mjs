@@ -5,7 +5,7 @@
 // BOTH real engines, sequentially:
 //
 //   firefox   — web-ext run starts the local Firefox against
-//               .output/firefox-mv3 (same invocation as the legacy chain)
+//               .output/firefox-mv3
 //   chromium  — Playwright launchPersistentContext loads .output/chromium-mv3
 //               as an unpacked extension (--load-extension)
 //
@@ -45,9 +45,9 @@ import { detectFirefoxBinary } from "./utils.mjs"
 const repoRoot = pathLib.resolve(pathLib.dirname(fileURLToPath(import.meta.url)), "..")
 const distDir = (engine) => pathLib.join(repoRoot, ".output", `${engine}-mv3`)
 
-// web-ext and wxt run as `node <repo>/node_modules/<pkg>/bin/...` (same
-// rationale as scripts/cli.mjs): no bin shim, no precheck layer that could
-// eat the exit code, package-manager agnostic.
+// web-ext and wxt run as `node <repo>/node_modules/<pkg>/bin/...`: no bin
+// shim, no precheck layer that could eat the exit code, package-manager
+// agnostic.
 const WEB_EXT_BIN = pathLib.join(repoRoot, "node_modules", "web-ext", "bin", "web-ext.js")
 const WXT_BIN = pathLib.join(repoRoot, "node_modules", "wxt", "bin", "wxt.mjs")
 

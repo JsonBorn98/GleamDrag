@@ -9,15 +9,16 @@ This is a personal fork of GleamDrag (origin: JsonBorn98/GleamDrag). The upstrea
 
 ## Project Structure & Module Organization
 
-GleamDrag is a Manifest V3 browser extension written in TypeScript and Svelte. Runtime code lives under `src/`: `background/` handles extension services, `content_scripts/` implements page interactions, `options/` contains the settings UI, and `components/` provides reusable Svelte UI. Configuration, state, request resolution, and shared utilities have dedicated directories. During the WXT migration `public/` (and `public-test/` for test builds) is the WXT static-asset source of truth; the legacy chain still reads `src/_locales/` and `src/icon/` (and `node_modules` copies of simpledotcss/mocha/chai) — both die with the legacy scripts. `src/entrypoints/` holds the WXT entrypoints. Build tooling lives in `scripts/`. Tests are colocated with their subjects as `*.test.ts`. Generated packages and browser-specific output belong in `build/` and `.output/` and must not be committed.
+GleamDrag is a Manifest V3 browser extension written in TypeScript and Svelte. Runtime code lives under `src/`: `background/` handles extension services, `content_scripts/` implements page interactions, `options/` contains the settings UI, and `components/` provides reusable Svelte UI. Configuration, state, request resolution, and shared utilities have dedicated directories. `public/` (and `public-test/` for test builds) is the WXT static-asset source of truth (`sync_public.mjs` refreshes the node_modules vendor assets into it). `src/entrypoints/` holds the WXT entrypoints. Build tooling lives in `scripts/`. Tests are colocated with their subjects as `*.test.ts`. Generated packages and browser-specific output belong in `.output/` and must not be committed.
 
 ## Build, Test, and Development Commands
 
 The repository pins dependencies through `bun.lock` and CI (`bun install --frozen-lockfile`), so use Bun rather than another package manager (see ADR 0001 in `docs/adr/`).
 
-The build is being migrated from the legacy Makefile/rollup chain to WXT (see `wxt.config.ts`); both chains coexist until the dual MV3 artifacts are verified in real browsers and the legacy scripts are deleted.
+The build runs on WXT (see `wxt.config.ts`); the legacy Makefile/rollup chain was deleted after the dual MV3 artifacts passed real-browser verification.
 
 - `bun install` installs the locked dependencies.
+- `bun run sync:public` refreshes `public/` + `public-test/` vendor assets from `node_modules` (simpledotcss, mocha, chai); committed copies are the single source otherwise.
 - `bun run build` builds Firefox and Chromium MV3 artifacts with WXT (`.output/firefox-mv3`, `.output/chromium-mv3`).
 - `bun run zip` builds both targets and zips them (`.output/gleamdrag-<version>-<target>.zip`).
 - `bun run build:test` builds the test artifact (WXT `GLEAMDRAG_TEST_BUILD=1`: ships the in-extension test page and the Firefox-only CSP override).
@@ -25,10 +26,8 @@ The build is being migrated from the legacy Makefile/rollup chain to WXT (see `w
 - `bun run verify:test-wxt` verifies the dual-engine harness contracts without a browser: green/red exit codes, the red leg names the failing fixture test, and all three watchdogs (silent suite, socket close before "end", no connection) finish non-zero with the watchdog reason in the output.
 - `bun run test:vitest` runs the offline pure-logic suite (Vitest, `vitest.config.ts`).
 - `bun run verify:vitest-exit-code` verifies the Vitest exit-code contract (deliberately failing fixture must exit non-zero).
-- `bun x tsc --noEmit` performs a standalone TypeScript check (strict; extends `.wxt/tsconfig.json`).
-- `make ext-firefox` / `make ext-chromium` build via the legacy rollup chain (`build/<target>/dist`) — legacy, removed after the WXT artifacts pass real-browser verification.
-- `make test` runs the legacy in-extension suite; `bun run verify:exit-code` verifies the exit-code contract through it.
-- `make clean` removes legacy build output; `rm -rf .output` removes WXT output.
+- `bun run typecheck` performs the TypeScript check (strict; extends `.wxt/tsconfig.json`).
+- `rm -rf .output` removes WXT output.
 
 ## Coding Style & Naming Conventions
 

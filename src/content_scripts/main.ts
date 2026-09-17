@@ -44,7 +44,7 @@ async function dispatcher(m: any) {
 function setupComponents() {
     const s = document.createElement("script")
     // WXT ships the custom-element bundle as a top-level unlisted script
-    // (components.js); the legacy rollup chain nested it at components/main.js.
+    // (components.js).
     s.src = browser.runtime.getURL("components.js")
     document.body.appendChild(s)
     // prevent script exposes to web page

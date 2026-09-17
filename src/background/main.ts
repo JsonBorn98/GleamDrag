@@ -91,8 +91,7 @@ browser.storage.local.onChanged.addListener(async () => {
 browser.contextMenus.onClicked.addListener(onMenuItemClick as (info: browser.Menus.OnClickData, tab: browser.Tabs.Tab | undefined) => void)
 
 async function openMocha() {
-    // WXT ships the test page as a top-level unlisted page (test.html); the
-    // legacy rollup chain nested it at test/mocha.html.
+    // WXT ships the test page as a top-level unlisted page (test.html).
     const url = new URL(browser.runtime.getURL("test.html"))
 
     try {

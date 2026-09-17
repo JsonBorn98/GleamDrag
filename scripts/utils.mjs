@@ -2,22 +2,6 @@
 import fs from 'node:fs'
 import pathLib from 'node:path'
 
-export function mustEnv(key, default_value) {
-	const value = process.env[key]
-	if (!value || value.length === 0) {
-		if (typeof default_value !== "undefined") {
-			return default_value
-		}
-		console.error("require environment: " + key)
-		process.exit(1)
-	}
-	return value
-}
-
-export function isTestTarget(target) {
-	return target.endsWith("test")
-}
-
 // Locate a usable Firefox binary without hardcoding a developer-edition
 // alias. Resolution order: GLEAMDRAG_FIREFOX_BIN override, then standard
 // install locations. Returns a path, or null when no Firefox can be found.

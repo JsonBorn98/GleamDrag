@@ -1,9 +1,10 @@
-// Sync WXT public/ (and public-test/) from the single sources.
+// Sync WXT public/ (and public-test/) from node_modules vendor sources.
 //
 // public/ and public-test/ are committed so a fresh checkout builds without
-// this script, but the copies here are the single source of truth feeding
-// both: src/_locales + src/icon (legacy chain), node_modules vendor css and
-// test libs. Run after upgrading mocha/chai/simpledotcss or editing locales.
+// this script; the committed copies of _locales/ and icon/ are the single
+// source (edit them in place). This script only refreshes the node_modules
+// vendor assets (simpledotcss, mocha, chai). Run after upgrading
+// mocha/chai/simpledotcss.
 //
 // Usage: node scripts/sync_public.mjs
 
@@ -13,9 +14,8 @@ import { fileURLToPath } from "node:url"
 
 const repoRoot = pathLib.resolve(pathLib.dirname(fileURLToPath(import.meta.url)), "..")
 
+// Vendor css shipped in every artifact (both public/ and public-test/).
 const baseAssets = [
-	{ src: pathLib.join(repoRoot, "src", "_locales"), dest: "_locales" },
-	{ src: pathLib.join(repoRoot, "src", "icon"), dest: "icon" },
 	{ src: pathLib.join(repoRoot, "node_modules", "simpledotcss", "simple.min.css"), dest: pathLib.join("res", "simple.min.css") },
 ]
 

@@ -6,9 +6,9 @@
 // both speaking the same [type, payload] protocol the in-extension
 // StreamReporter sends (src/test/mocha_init.ts).
 //
-// scripts/verify_exit_code.mjs (the legacy chain) keeps its own private
-// copies: it dies with the legacy scripts in ticket 10, and migrating a
-// doomed script would be churn. This module serves the WXT chain only.
+// scripts/verify_exit_code.mjs (the deleted legacy chain) kept its own
+// private copies; they died with the legacy scripts in ticket 10. This
+// module serves the WXT chain only.
 
 import { createRequire } from "node:module"
 import fs from "node:fs"

@@ -132,7 +132,7 @@ dist
 
 
 # custom (project build output)
-# rollup dist lives at build/<target>/dist, packaged zips at build/artifacts/
+# legacy-chain output lived in build/; WXT output lives in .output/
 build/
 web-ext-artifacts/
 artifacts/

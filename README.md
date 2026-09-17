@@ -15,16 +15,15 @@ A good drag and drop extension that improve your browsing experience. Currently 
 
 ## How To Build
 
-To build extension, you need: node v24, bun v1.2+, make, git
+To build extension, you need: node v24, bun v1.2+, git
 
 ```bash
 cd <project directory>
 bun install
-make ext-firefox 
-make ext-chromium 
+bun run zip
 ```
 
-After the build process completed, `./build/firefox/dist` contains compiled result, `./build/firefox/artifacts` contains package file.
+After the build process completed, `.output/firefox-mv3` and `.output/chromium-mv3` contain the compiled results, `.output/gleamdrag-<version>-firefox.zip` and `.output/gleamdrag-<version>-chromium.zip` contain the package files.
 
 ## Limitation
 
