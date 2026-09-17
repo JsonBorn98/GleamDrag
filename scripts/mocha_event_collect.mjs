@@ -10,7 +10,8 @@
 //      the exit code — no other event can flip it green.
 //   2. watchdog contract (ticket 03 retro, ticket 08 acceptance): the
 //      browser leg dying or timing out must finish this leg with a
-//      non-zero verdict. The pre-watchdog shape (waitTestComplete) had
+//      non-zero verdict. The pre-watchdog collector (the pre-WXT chain's
+//      waitTestComplete) had
 //      no timeout and no watchdog: a dead Firefox left the wss waiting
 //      forever, squatting the port and killing the next run with
 //      EADDRINUSE and a 0-byte log. A harness reusing that shape re-creates

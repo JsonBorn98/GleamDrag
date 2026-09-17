@@ -1,10 +1,11 @@
 // Sync WXT public/ (and public-test/) from node_modules vendor sources.
 //
 // public/ and public-test/ are committed so a fresh checkout builds without
-// this script; the committed copies of _locales/ and icon/ are the single
-// source (edit them in place). This script only refreshes the node_modules
-// vendor assets (simpledotcss, mocha, chai). Run after upgrading
-// mocha/chai/simpledotcss.
+// this script. This script only refreshes the node_modules vendor assets
+// (simpledotcss, mocha, chai). The _locales/ and icon/ copies in BOTH
+// directories are hand-maintained and no longer script-synced: edit each
+// copy in step, or the test artifact silently ships a stale one.
+// Run after upgrading mocha/chai/simpledotcss.
 //
 // Usage: node scripts/sync_public.mjs
 

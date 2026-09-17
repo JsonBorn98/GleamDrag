@@ -132,7 +132,8 @@ dist
 
 
 # custom (project build output)
-# legacy-chain output lived in build/; WXT output lives in .output/
+# build/ catches harness scratch output (scripts/mocha_event_fixtures.mjs
+# compiles the fixture there); WXT output lives in .output/
 build/
 web-ext-artifacts/
 artifacts/

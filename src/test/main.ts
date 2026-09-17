@@ -13,7 +13,7 @@ import "../state/state.test"
 import { registerFailingFixture } from './fixture/failing'
 
 // Opt-in failing fixture for the exit-code contract: registered only when
-// the test page is opened as `test/mocha.html?suite=fixture`; the default
+// the test page is opened as `test.html?suite=fixture`; the default
 // suite (no query) stays green.
 const suite = new URLSearchParams(window.location.search).get("suite")
 if (suite === "fixture") {

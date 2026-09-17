@@ -5,9 +5,10 @@
 //   2. red: the deliberately failing fixture suite -> exit non-zero,
 //      with the fixture test actually run
 //
-// Mirrors scripts/verify_exit_code.mjs (in-extension leg): a runner that
-// swallows failures would defeat both stacks, so each stack verifies its own
-// exit-code contract through its own command. "No test files found" also
+// The in-extension leg (scripts/verify_test_wxt.mjs) verifies its own
+// contract the same way: a runner that swallows failures would defeat both
+// stacks, so each stack verifies its own exit-code contract through its own
+// command. "No test files found" also
 // exits 1, so the red leg asserts the fixture's own failing test in the
 // output — a non-zero exit alone is not evidence a test ran.
 //
