@@ -1,5 +1,5 @@
 import { VarSubstituteTemplate } from "./var_substitute"
-import { assert } from 'chai'
+import { expect } from "vitest"
 
 
 describe('test variable substitute', () => {
@@ -19,7 +19,7 @@ describe('test variable substitute', () => {
 		for (const c of cases) {
 			const template = new VarSubstituteTemplate(c)
 			const result = template.substitute(m)
-			assert.deepEqual(result, c)
+			expect(result).toBe(c)
 		}
 	})
 
@@ -51,7 +51,7 @@ describe('test variable substitute', () => {
 		for (const [s, expected] of cases) {
 			const template = new VarSubstituteTemplate(s!)
 			const result = template.substitute(m)
-			assert.deepEqual(result, expected)
+			expect(result).toBe(expected)
 		}
 	})
 })

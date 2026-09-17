@@ -22,6 +22,8 @@ The build is being migrated from the legacy Makefile/rollup chain to WXT (see `w
 - `bun run zip` builds both targets and zips them (`.output/gleamdrag-<version>-<target>.zip`).
 - `bun run build:test` builds the test artifact (WXT `GLEAMDRAG_TEST_BUILD=1`: ships the in-extension test page and the Firefox-only CSP override).
 - `node scripts/test_wxt.mjs` builds nothing itself; it launches web-ext against `.output/firefox-mv3` and runs the in-extension Mocha suite over WebSocket (build first with `bun run build:test` plus `GLEAMDRAG_WS_SERVER`).
+- `bun run test:vitest` runs the offline pure-logic suite (Vitest, `vitest.config.ts`).
+- `bun run verify:vitest-exit-code` verifies the Vitest exit-code contract (deliberately failing fixture must exit non-zero).
 - `bun x tsc --noEmit` performs a standalone TypeScript check (strict; extends `.wxt/tsconfig.json`).
 - `make ext-firefox` / `make ext-chromium` build via the legacy rollup chain (`build/<target>/dist`) — legacy, removed after the WXT artifacts pass real-browser verification.
 - `make test` runs the legacy in-extension suite; `bun run verify:exit-code` verifies the exit-code contract through it.
@@ -33,7 +35,7 @@ Match adjacent code: use TypeScript modules, tabs for indentation in `.ts` files
 
 ## Testing Guidelines
 
-Tests use Mocha with Chai assertions and are initialized by `src/test/mocha_init.ts`. Add or update a colocated `*.test.ts` file for behavioral changes. Name `describe` blocks after the module or feature and `it` blocks after observable behavior. Run `make test` before submitting; there is currently no enforced coverage percentage.
+Tests follow the dual-stack split (ADR 0002): pure-logic tests (no `webextension-polyfill`/DOM on the exercised path) run offline in Vitest with `expect` assertions; in-extension contract tests run in the real extension through Mocha with Chai, initialized by `src/test/mocha_init.ts` and imported from `src/test/main.ts`. Add or update a colocated `*.test.ts` file for behavioral changes; wire it into the right stack (`vitest.config.ts` exclude vs `src/test/main.ts` import). Name `describe` blocks after the module or feature and `it` blocks after observable behavior. Run `bun run test:vitest` and the in-extension suite before submitting; there is currently no enforced coverage percentage.
 
 ## Commit & Pull Request Guidelines
 

@@ -3,12 +3,14 @@
   "compilerOptions": {
     // Strict follows the WXT-generated config (spec: TypeScript strict is
     // enabled along with the WXT config).
-    "types": ["svelte", "mocha"],
+    // mocha: in-extension contract suite globals (src/test/mocha_init.ts);
+    // vitest: offline pure-logic suite globals (vitest.config.ts globals: true).
+    "types": ["svelte", "mocha", "vitest/globals"],
     "paths": {
       "@/*": ["./src/*"],
       "~/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "wxt.config.ts", ".wxt/wxt.d.ts"],
+  "include": ["src/**/*", "wxt.config.ts", "vitest.config.ts", ".wxt/wxt.d.ts"],
   "exclude": ["node_modules/*", "build/*", ".output/*", "public/*", "public-test/*"]
 }

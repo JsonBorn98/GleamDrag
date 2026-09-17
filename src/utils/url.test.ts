@@ -1,6 +1,6 @@
 import { URLFixer } from './url'
 import { rootLog } from './log';
-import { assert } from 'chai'
+import { expect } from "vitest"
 
 describe('test url fixer', () => {
 
@@ -12,7 +12,7 @@ describe('test url fixer', () => {
       "http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/win-64"
     ]
     for (const c of urls) {
-      assert.deepEqual(fixer.fix(c)!.toString(), c)
+      expect(fixer.fix(c)!.toString()).toBe(c)
     }
   })
 
@@ -25,7 +25,7 @@ describe('test url fixer', () => {
     ]
 
     for (const c of urls) {
-      assert.notOk(fixer.fix(c), c)
+      expect(fixer.fix(c)).toBeNull()
     }
 
   });
@@ -38,7 +38,7 @@ describe('test url fixer', () => {
       "127.0.0.1"
     ]
     for (const c of urls) {
-      assert.ok(fixer.fix(c), c)
+      expect(fixer.fix(c)).not.toBeNull()
     }
   });
 
@@ -50,8 +50,8 @@ describe('test url fixer', () => {
       "::1"
     ]
     for (const c of urls) {
-      assert.notOk(fixer.fix(c), "not support plain ipv6: " + c)
-      assert.ok(fixer.fix("[" + c + "]"), "ipv6 url: " + c)
+      expect(fixer.fix(c), "not support plain ipv6: " + c).toBeNull()
+      expect(fixer.fix("[" + c + "]"), "ipv6 url: " + c).not.toBeNull()
     }
   });
 
@@ -83,7 +83,7 @@ describe('test url fixer', () => {
     for (const c of urls) {
       const fixed = fixer.fix(c[0])!.toString()
       rootLog.VVV("origin: ", c[0], "fixed:", fixed, " expected: ", c[1], " same: ", fixed == c[1])
-      assert.deepEqual(fixed, c[1])
+      expect(fixed).toBe(c[1])
     }
   });
   it('special protocol url', function () {
@@ -93,7 +93,7 @@ describe('test url fixer', () => {
       "mailto:someone@example.com"
     ]
     for (const url of urls) {
-      assert.ok(fixer.fix(url))
+      expect(fixer.fix(url)).not.toBeNull()
     }
   })
 });

@@ -1,4 +1,4 @@
-import { assert } from "chai"
+import { expect } from "vitest"
 import { ActionConfig, BroadcastEventTarget, CommandRequest, configBroadcast as configBroadcast, Configuration, type ReadonlyConfiguration } from "./config"
 
 describe("test configuration", () => {
@@ -8,14 +8,14 @@ describe("test configuration", () => {
 
 	it("action config", () => {
 		const action = new ActionConfig({})
-		assert.ok(action.toPlainObject())
+		expect(action.toPlainObject()).toBeTruthy()
 	})
 
 	it("request config", () => {
 		const req = new CommandRequest({
 			"url": "http://example.com"
 		})
-		assert.ok(req.toPlainObject())
+		expect(req.toPlainObject()).toBeTruthy()
 	})
 
 	it("broadcast", () => {
@@ -41,24 +41,24 @@ describe("test configuration", () => {
 
 		broadcast.addListener(listener0)
 		broadcast.notify(new Configuration())
-		assert.isNotEmpty(listener0Result)
-		assert.isEmpty(listener1Result)
+		expect(listener0Result).not.toHaveLength(0)
+		expect(listener1Result).toHaveLength(0)
 		reset()
 
 		broadcast.addListener(listener1)
 		broadcast.removeListener(listener0)
 		broadcast.notify(new Configuration())
-		assert.isEmpty(listener0Result)
-		assert.isNotEmpty(listener1Result)
+		expect(listener0Result).toHaveLength(0)
+		expect(listener1Result).not.toHaveLength(0)
 		reset()
 
 		broadcast.addListener(listener0)
 		broadcast.addListener(listener0)
 		broadcast.addListener(listener1)
 		broadcast.notify(new Configuration())
-		assert.isNotEmpty(listener0Result)
-		assert.equal(listener0Result.length, 2, "call listener0 twice")
-		assert.isNotEmpty(listener1Result)
+		expect(listener0Result).not.toHaveLength(0)
+		expect(listener0Result.length, "call listener0 twice").toBe(2)
+		expect(listener1Result).not.toHaveLength(0)
 		reset()
 	})
 })

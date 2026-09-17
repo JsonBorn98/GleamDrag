@@ -1,4 +1,4 @@
-import { assert } from "chai"
+import { expect } from "vitest"
 import { getAngle, TinyLRU } from "./utils"
 
 describe("content script utils", () => {
@@ -27,28 +27,28 @@ describe("content script utils", () => {
 		]
 		for (const tt of testCases) {
 			let a = getAngle(tt.args[0]!, tt.args[1]!)
-			assert.ok(tt.angle === a)
+			expect(a).toBe(tt.angle)
 		}
 	})
 
 	it('tiny lru', () => {
 		const lru = new TinyLRU<number, number>()
 
-		assert.ok(lru.get(1) === undefined)
-		assert.ok(lru.get(2) === undefined)
-		assert.ok(lru.get(undefined!) === undefined)
+		expect(lru.get(1)).toBe(undefined)
+		expect(lru.get(2)).toBe(undefined)
+		expect(lru.get(undefined!)).toBe(undefined)
 
 		lru.put(1, 1)
 		lru.put(2, 2)
 
-		assert.ok(lru.get(1) === 1)
-		assert.ok(lru.get(2) === 2)
+		expect(lru.get(1)).toBe(1)
+		expect(lru.get(2)).toBe(2)
 
-		assert.ok(lru.get(0) === undefined)
-		assert.ok(lru.size() === 2)
+		expect(lru.get(0)).toBe(undefined)
+		expect(lru.size()).toBe(2)
 
 		lru.clear()
 
-		assert.ok(lru.size() === 0)
+		expect(lru.size()).toBe(0)
 	})
 })

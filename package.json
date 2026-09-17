@@ -8,6 +8,8 @@
         "build": "node scripts/sync_public.mjs && wxt build -b firefox && wxt build -b chromium",
         "build:test": "node scripts/sync_public.mjs && GLEAMDRAG_TEST_BUILD=1 wxt build -b firefox",
         "zip": "node scripts/sync_public.mjs && wxt build -b firefox && wxt build -b chromium && wxt zip -b firefox && wxt zip -b chromium",
+        "test:vitest": "vitest run",
+        "verify:vitest-exit-code": "node scripts/verify_vitest_exit_code.mjs",
         "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
@@ -42,6 +44,7 @@
         "typescript": "^5.1.3",
         "uuid": "^9.0.0",
         "vite": "^8.3.0",
+        "vitest": "^5.0.1",
         "web-ext": "^7.6.2",
         "webextension-polyfill": "^0.10.0",
         "ws": "^8.13.0",

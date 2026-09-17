@@ -1,9 +1,7 @@
+import { expect } from "vitest"
 import { CompatibilityRule, CompatibilityStatus, type PlainCompatibilityRule } from "../config/config"
 
-import chai from "chai"
 import { checkCompatibility } from "./compat"
-
-const assert = chai.assert
 
 describe("compatibility", () => {
 	it("check compatibility", () => {
@@ -61,7 +59,7 @@ describe("compatibility", () => {
 		for (const tc of testCases) {
 			const rules = tc.rules.map(r => new CompatibilityRule(r))
 			const result = checkCompatibility(tc.location, rules)
-			assert.equal(result, tc.result, "check location: " + tc.location)
+			expect(result, "check location: " + tc.location).toBe(tc.result)
 		}
 	})
 })
