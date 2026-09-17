@@ -6,7 +6,7 @@ Claimed-at: 2026-09-17T03:17:34.178Z
 
 **阻塞于.** 05, 06
 
-**状态.** claimed
+**状态.** resolved
 
 - [ ] Playwright 以 Chromium persistent context 加载产物并跑扩展内套件（自动化）
 - [ ] web-ext 自动起本机 Firefox 跑同一套扩展内契约套件
