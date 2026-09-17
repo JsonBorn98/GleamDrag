@@ -59,6 +59,18 @@ const ENGINES = ["firefox", "chromium"]
 // stall the next leg or the whole dual run.
 const ENGINE_TEARDOWN_TIMEOUT_MS = 15_000
 
+// Collector options shared by every leg: per-event logging plus the
+// injectable watchdog timers (verify_test_wxt.mjs shrinks them to test
+// the watchdog contract inside its scenario budgets).
+function collectorOptions(label) {
+	return {
+		label,
+		onEvent: logEvent(label),
+		connectTimeoutMs: args.connectTimeoutMs ?? undefined,
+		suiteTimeoutMs: args.suiteTimeoutMs ?? undefined,
+	}
+}
+
 function parseArgs() {
 	const flag = (name) => {
 		const i = process.argv.indexOf(name)
@@ -201,18 +213,13 @@ async function runChromium(engine, wsAddr, collector) {
 
 // One engine leg: collector up, engine up, await the verdict (never hangs),
 // tear the engine down, release the port before the next leg rebinds it.
-async function runEngineLeg(engine, wsAddr, timeouts) {
+async function runEngineLeg(engine, wsAddr) {
 	const dist = distDir(engine)
 	if (!fs.existsSync(pathLib.join(dist, "manifest.json"))) {
 		console.error(`[${engine}] no artifact at ${dist}; build first (drop --no-build)`)
 		return 1
 	}
-	const collector = startCollector(wsAddr, {
-		label: engine,
-		onEvent: logEvent(engine),
-		connectTimeoutMs: args.connectTimeoutMs ?? undefined,
-		suiteTimeoutMs: args.suiteTimeoutMs ?? undefined,
-	})
+	const collector = startCollector(wsAddr, collectorOptions(engine))
 
 	// A missing Firefox binary makes runWebExt abort the collector and hand
 	// back null; the ?? keeps the teardown below a no-op instead of a crash.
@@ -250,12 +257,7 @@ if (args.noBrowser) {
 	// Judgment path only: no build, no engine. A synthetic client feeds the
 	// collector over args.wsAddr; scripts/verify_test_wxt.mjs drives this to
 	// verify the exit-code contract end-to-end.
-	const collector = startCollector(args.wsAddr, {
-		label: "judgment",
-		onEvent: logEvent("judgment"),
-		connectTimeoutMs: args.connectTimeoutMs ?? undefined,
-		suiteTimeoutMs: args.suiteTimeoutMs ?? undefined,
-	})
+	const collector = startCollector(args.wsAddr, collectorOptions("judgment"))
 	const verdict = await collector.promise
 	console.log(`[judgment] verdict (exit ${verdict.code}): ${verdict.reason}`)
 	await collector.closed()

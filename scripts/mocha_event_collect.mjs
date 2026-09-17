@@ -108,40 +108,29 @@ export function startCollector(wsAddr, { label, connectTimeoutMs = CONNECT_TIMEO
 			const [type, payload] = JSON.parse(data)
 			events.push([type, payload])
 			if (onEvent) onEvent(type, payload)
-			switch (type) {
-				case "start": {
-					ws.send("ok")
-					break
-				}
-				case "pass": {
-					ws.send("ok")
-					break
-				}
-				case "fail": {
-					ws.send("ok")
-					break
-				}
-				case "end": {
-					clearTimeout(suiteTimer)
-					ws.close()
-					// exit-code contract: plural `failures` decides.
-					// Missing/invalid stats are a protocol break, not a
-					// green run: judge them red.
-					const failures = Number(payload?.failures)
-					if (!Number.isFinite(failures)) {
-						settle(1, `${label}: "end" stats missing numeric failures`, payload)
-					} else if (failures > 0) {
-						settle(1, `${label}: ${failures} test failure(s)`, payload)
-					} else {
-						settle(0, `${label}: suite green`, payload)
-					}
-					break
-				}
-				default: {
-					clearTimeout(suiteTimer)
-					settle(1, `${label}: unknown event type: ${type}`)
-				}
+			if (type === "start" || type === "pass" || type === "fail") {
+				// the reporter expects an ack per event; nothing to judge
+				ws.send("ok")
+				return
 			}
+			if (type === "end") {
+				clearTimeout(suiteTimer)
+				ws.close()
+				// exit-code contract: plural `failures` decides.
+				// Missing/invalid stats are a protocol break, not a
+				// green run: judge them red.
+				const failures = Number(payload?.failures)
+				if (!Number.isFinite(failures)) {
+					settle(1, `${label}: "end" stats missing numeric failures`, payload)
+				} else if (failures > 0) {
+					settle(1, `${label}: ${failures} test failure(s)`, payload)
+				} else {
+					settle(0, `${label}: suite green`, payload)
+				}
+				return
+			}
+			clearTimeout(suiteTimer)
+			settle(1, `${label}: unknown event type: ${type}`)
 		})
 	})
 

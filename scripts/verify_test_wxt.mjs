@@ -57,8 +57,10 @@ function tryConnect(port) {
 // Spawn the harness judgment path against a private port; the feeder sends
 // (or never sends) events; resolve with the harness exit code + output.
 // extraArgs lets the watchdog scenarios shrink the harness's own timers so
-// the watchdog (not this script's kill timer) finishes the leg.
-async function runHarness(wsUrl, feed, extraArgs = []) {
+// the watchdog (not this script's kill timer) finishes the leg. probe=false
+// skips the connect probe entirely: a scenario exercising the connect
+// watchdog must not let this script's own probe be the first connection.
+async function runHarness(wsUrl, feed, extraArgs = [], { probe = true } = {}) {
 	const child = spawn(process.execPath, ["scripts/test_wxt.mjs", "--no-browser", "--ws-server", wsUrl, ...extraArgs], {
 		cwd: repoRoot,
 		stdio: ["ignore", "pipe", "pipe"],
@@ -72,29 +74,33 @@ async function runHarness(wsUrl, feed, extraArgs = []) {
 		child.on("close", (code) => resolve(code))
 	})
 
-	// the harness starts its collector before any engine exists; retry-connect
-	// until it listens or the harness dies
-	let ws = null
-	const deadline = Date.now() + CONNECT_TIMEOUT_MS
-	while (!ws) {
-		if (child.exitCode !== null) {
-			await exitCode
-			throw new Error(`harness exited early (${child.exitCode}); output tail:\n${tail(output)}`)
+	if (probe) {
+		// the harness starts its collector before any engine exists;
+		// retry-connect until it listens or the harness dies
+		let ws = null
+		const deadline = Date.now() + CONNECT_TIMEOUT_MS
+		while (!ws) {
+			if (child.exitCode !== null) {
+				await exitCode
+				throw new Error(`harness exited early (${child.exitCode}); output tail:\n${tail(output)}`)
+			}
+			if (Date.now() > deadline) {
+				child.kill()
+				throw new Error(`cannot connect to ${wsUrl}; output tail:\n${tail(output)}`)
+			}
+			ws = await tryConnect(portOf(wsUrl)).catch(() => null)
+			if (!ws) {
+				await sleep(100)
+			}
 		}
-		if (Date.now() > deadline) {
-			child.kill()
-			throw new Error(`cannot connect to ${wsUrl}; output tail:\n${tail(output)}`)
-		}
-		ws = await tryConnect(portOf(wsUrl)).catch(() => null)
-		if (!ws) {
-			await sleep(100)
-		}
+		await feed(ws)
+	} else {
+		await feed(null)
 	}
 
-	const verdict = await feed(ws)
 	const code = await exitCode
 	clearTimeout(killTimer)
-	return { code, output, ...verdict }
+	return { code, output }
 }
 
 async function wsUrlFreePort() {
@@ -133,7 +139,6 @@ await scenario("green stream (failures = 0) exits zero", true, async () =>
 		ws.send(JSON.stringify(["start", { total: 1 }]))
 		ws.send(JSON.stringify(["pass", fakeTest("synthetic: passing case")]))
 		ws.send(JSON.stringify(["end", mochaStats({ tests: 1, passes: 1, failures: 0 })]))
-		return {}
 	})
 )
 
@@ -154,29 +159,21 @@ try {
 	console.error(`FAIL: fixture suite check: ${error.message}`)
 }
 
-// 2. red stream exits non-zero and names the failing test
+// 2. red stream exits non-zero and names the failing test. The same run
+//    feeds the name check: running the fixture stream twice just to
+//    re-capture output would be a duplicate of the scenario itself.
 if (fixtureEvents) {
-	await scenario("real fixture stream (failures > 0) exits non-zero", false, async () =>
+	const redOutput = await scenario("real fixture stream (failures > 0) exits non-zero", false, async () =>
 		runHarness(await wsUrlFreePort(), async (ws) => {
 			for (const event of fixtureEvents) {
 				ws.send(JSON.stringify(event))
 			}
-			return {}
 		})
 	)
-	const redOutput = await (async () => {
-		const { code, output } = await runHarness(await wsUrlFreePort(), async (ws) => {
-			for (const event of fixtureEvents) {
-				ws.send(JSON.stringify(event))
-			}
-			return {}
-		})
-		return output
-	})()
 	// "No test files found"-style empty verification must not pass: the
 	// output has to name the fixture test (shoals: non-zero exit alone is
 	// not evidence a red test ran).
-	const named = redOutput.includes("deliberately fails")
+	const named = redOutput?.includes("deliberately fails")
 	if (!named) {
 		failed += 1
 		console.error("FAIL: red output does not name the fixture test ('deliberately fails')")
@@ -217,7 +214,6 @@ function watchdogChecks(name, expectedReason) {
 		// send "start" then go silent: connected, suite never finishes —
 		// the shape of an engine dying mid-suite
 		ws.send(JSON.stringify(["start", { total: 3 }]))
-		return {}
 	}, ["--suite-timeout-ms", "5000"])
 	watchdogChecks(name, "suite did not finish within")({ code, output })
 }
@@ -232,29 +228,22 @@ function watchdogChecks(name, expectedReason) {
 		ws.send(JSON.stringify(["pass", fakeTest("synthetic: passing case")]))
 		// close without "end": the reporting page (engine) is gone
 		ws.close()
-		return {}
 	}, ["--suite-timeout-ms", "60000"])
 	watchdogChecks(name, "reporting socket closed before")({ code, output })
 }
 
 // 5. watchdog: no connection at all (engine died before the suite
-//    started) — the connect timer. Bespoke spawn: runHarness's own probe
-//    connection would clear the connect timer, so this scenario must not
-//    connect anything to the harness port.
+//    started) — the connect timer. probe=false: runHarness's own probe
+//    connection would clear the connect timer, so nothing may connect
+//    to the harness port before the watchdog fires.
 {
 	const name = "watchdog: no connection finishes non-zero, no hang"
-	const port = await freePort()
-	const child = spawn(process.execPath, [
-		"scripts/test_wxt.mjs", "--no-browser",
-		"--ws-server", `ws://127.0.0.1:${port}`,
-		"--connect-timeout-ms", "5000",
-	], { cwd: repoRoot, stdio: ["ignore", "pipe", "pipe"] })
-	let output = ""
-	child.stdout.on("data", (data) => { output += data })
-	child.stderr.on("data", (data) => { output += data })
-	const killTimer = setTimeout(() => child.kill(), SCENARIO_TIMEOUT_MS)
-	const code = await new Promise((resolve) => child.on("close", (c) => resolve(c)))
-	clearTimeout(killTimer)
+	const { code, output } = await runHarness(
+		await wsUrlFreePort(),
+		async () => { /* never connect: the shape of a browser that dies at spawn */ },
+		["--connect-timeout-ms", "5000"],
+		{ probe: false },
+	)
 	watchdogChecks(name, "no connection within")({ code, output })
 }
 

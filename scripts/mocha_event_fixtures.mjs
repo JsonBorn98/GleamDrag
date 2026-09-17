@@ -1,11 +1,14 @@
-// Shared mocha event-stream fixtures for the exit-code verify scripts.
+// Shared mocha event-stream fixtures for the WXT-chain verify script
+// (scripts/verify_test_wxt.mjs).
 //
-// Both verify_exit_code.mjs (legacy chain judgment path) and
-// verify_test_wxt.mjs (WXT chain judgment path) judge the same
-// [type, payload] protocol the in-extension StreamReporter speaks
-// (src/test/mocha_init.ts). The shapes live here once: a synthetic
-// green stream, and the REAL event stream captured from running the
-// deliberately failing fixture under mocha.
+// The shapes: a synthetic green stream, and the REAL event stream
+// captured from running the deliberately failing fixture under mocha —
+// both speaking the same [type, payload] protocol the in-extension
+// StreamReporter sends (src/test/mocha_init.ts).
+//
+// scripts/verify_exit_code.mjs (the legacy chain) keeps its own private
+// copies: it dies with the legacy scripts in ticket 10, and migrating a
+// doomed script would be churn. This module serves the WXT chain only.
 
 import { createRequire } from "node:module"
 import fs from "node:fs"
