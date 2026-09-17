@@ -10,6 +10,8 @@
         "zip": "node scripts/sync_public.mjs && wxt build -b firefox && wxt build -b chromium && wxt zip -b firefox && wxt zip -b chromium",
         "test:vitest": "vitest run",
         "verify:vitest-exit-code": "node scripts/verify_vitest_exit_code.mjs",
+        "test:wxt": "node scripts/test_wxt.mjs",
+        "verify:test-wxt": "node scripts/verify_test_wxt.mjs",
         "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
@@ -34,6 +36,7 @@
         "lodash-core": "^4.17.19",
         "lodash-es": "^4.17.21",
         "mocha": "^10.2.0",
+        "playwright": "^1.63.0",
         "rollup": "^3.24.0",
         "rollup-plugin-svelte": "^7.1.5",
         "simpledotcss": "^2.2.1",

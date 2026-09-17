@@ -5,6 +5,7 @@ import { ActionConfig, CommandKind, Configuration } from "../config/config"
 import { closeTab } from '../utils/test';
 import { Executor } from "./executor"
 import { blankExecuteContext } from "../context/test_helper"
+import { isChromium } from "../utils/vendor"
 import { RuntimeMessageName } from "../message/message"
 import type { RuntimeMessage } from "../message/message"
 
@@ -28,6 +29,24 @@ describe("test executor", async () => {
 
     it("dump context", async () => {
         const ctx = await blankExecuteContext()
+        if (isChromium()) {
+            // Engine contract, pinned by the dual-engine harness (ticket 08):
+            // Chromium refuses scripting.executeScript into about:blank —
+            // host_permissions "*://*/*" does not cover the about: scheme —
+            // while Firefox allows it. The dump target's about:blank choice
+            // is a known engine divergence; the background refactor spec
+            // owns the fix. When it lands, this branch flips and forces a
+            // conscious update here.
+            let rejection: unknown = null
+            try {
+                await executor.dumpHandler(ctx)
+            } catch (e) {
+                rejection = e
+            }
+            assert.instanceOf(rejection, Error, "Chromium must refuse the about:blank injection this build ships")
+            assert.match(String(rejection), /Cannot access contents/, "the refusal names the missing host permission")
+            return
+        }
         await executor.dumpHandler(ctx)
     })
 
