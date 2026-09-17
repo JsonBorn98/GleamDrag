@@ -37,12 +37,9 @@ import { spawn, spawnSync } from "node:child_process"
 import fs from "node:fs"
 import os from "node:os"
 import pathLib from "node:path"
-import { fileURLToPath } from "node:url"
 import { chromium } from "playwright"
 import { logEvent, startCollector } from "./mocha_event_collect.mjs"
-import { detectFirefoxBinary } from "./utils.mjs"
-
-const repoRoot = pathLib.resolve(pathLib.dirname(fileURLToPath(import.meta.url)), "..")
+import { detectFirefoxBinary, repoRoot } from "./utils.mjs"
 const distDir = (engine) => pathLib.join(repoRoot, ".output", `${engine}-mv3`)
 
 // web-ext and wxt run as `node <repo>/node_modules/<pkg>/bin/...`: no bin

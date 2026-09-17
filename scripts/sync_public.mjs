@@ -11,9 +11,7 @@
 
 import fs from "node:fs"
 import pathLib from "node:path"
-import { fileURLToPath } from "node:url"
-
-const repoRoot = pathLib.resolve(pathLib.dirname(fileURLToPath(import.meta.url)), "..")
+import { repoRoot } from "./utils.mjs"
 
 // Vendor css shipped in every artifact (both public/ and public-test/).
 const baseAssets = [

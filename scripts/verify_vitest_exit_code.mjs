@@ -15,10 +15,7 @@
 // Usage: node scripts/verify_vitest_exit_code.mjs
 import { spawn } from "node:child_process"
 import { join } from "node:path"
-import pathLib from "node:path"
-import { fileURLToPath } from "node:url"
-
-const repoRoot = pathLib.resolve(pathLib.dirname(fileURLToPath(import.meta.url)), "..")
+import { repoRoot, tail } from "./utils.mjs"
 
 const DEFAULT_CONFIG = join(repoRoot, "vitest.config.ts")
 // Dedicated fixture config: the default config excludes src/test/vitest/**
@@ -30,11 +27,6 @@ const FIXTURE_CONFIG = join(repoRoot, "src", "test", "vitest", "fixture", "vites
 // Same runner binary as the "test:vitest" npm script, spawned through the
 // process executable to stay package-manager agnostic.
 const VITEST_BIN = join(repoRoot, "node_modules", "vitest", "vitest.mjs")
-
-function tail(text) {
-	const max = 4000
-	return text.length > max ? "..." + text.slice(-max) : text
-}
 
 function runVitest(config) {
 	return new Promise((resolve) => {

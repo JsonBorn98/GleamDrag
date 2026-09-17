@@ -13,9 +13,7 @@
 import { createRequire } from "node:module"
 import fs from "node:fs"
 import path from "node:path"
-import { fileURLToPath } from "node:url"
-
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
+import { repoRoot } from "./utils.mjs"
 
 // Same clean-test shape the in-extension reporter sends for pass/fail events.
 export function fakeTest(fullTitle) {

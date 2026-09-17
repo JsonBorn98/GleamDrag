@@ -11,7 +11,8 @@
         "verify:vitest-exit-code": "node scripts/verify_vitest_exit_code.mjs",
         "test:wxt": "node scripts/test_wxt.mjs",
         "verify:test-wxt": "node scripts/verify_test_wxt.mjs",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "postinstall": "wxt prepare"
     },
     "devDependencies": {
         "@types/chai": "^4.3.5",

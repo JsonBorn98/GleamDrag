@@ -1,6 +1,18 @@
 
 import fs from 'node:fs'
 import pathLib from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// Shared helpers for the scripts/ tooling. The verify_* harnesses use
+// tail() to bound the output they print on failure; it lives here so the
+// two harnesses do not each keep a private copy (review finding on the
+// dual-axis pass: same shape, two files).
+export function tail(text) {
+	const max = 4000
+	return text.length > max ? "..." + text.slice(-max) : text
+}
+
+export const repoRoot = pathLib.resolve(pathLib.dirname(fileURLToPath(import.meta.url)), "..")
 
 // Locate a usable Firefox binary without hardcoding a developer-edition
 // alias. Resolution order: GLEAMDRAG_FIREFOX_BIN override, then standard

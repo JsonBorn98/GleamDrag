@@ -148,7 +148,13 @@ export function logEvent(label) {
 		if (type === "pass") {
 			console.info(`[${label}] pass: %s`, payload.fullTitle)
 		} else if (type === "fail") {
-			console.error(`[${label}] fail: %s`, payload.fullTitle)
+			// err/stack ride the same [type, payload] stream (mocha_init
+			// EVENT_TEST_FAIL); print them or an intermittent suite failure
+			// (seen once: Firefox dump-context flake) is undiagnosable from CI.
+			console.error(`[${label}] fail: %s%s`, payload.fullTitle,
+				payload.err ? `\n[${label}]   ${String(payload.err).split("\n").join(`\n[${label}]   `)}`
+					+ (payload.stack ? `\n[${label}]   ${String(payload.stack).split("\n").join(`\n[${label}]   `)}` : "")
+				: "")
 		}
 	}
 }

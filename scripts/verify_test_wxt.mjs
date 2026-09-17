@@ -17,23 +17,15 @@
 
 import { spawn } from "node:child_process"
 import net from "node:net"
-import path from "node:path"
-import { fileURLToPath } from "node:url"
+import { repoRoot, tail } from "./utils.mjs"
 import WebSocket from "ws"
 import { captureFixtureEvents, fakeTest, mochaStats } from "./mocha_event_fixtures.mjs"
-
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 
 const CONNECT_TIMEOUT_MS = 10_000
 const SCENARIO_TIMEOUT_MS = 120_000
 
 function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-function tail(text) {
-	const max = 4000
-	return text.length > max ? "..." + text.slice(-max) : text
 }
 
 function freePort() {
