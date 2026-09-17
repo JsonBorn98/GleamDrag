@@ -38,7 +38,7 @@ describe('test url fixer', () => {
       "127.0.0.1"
     ]
     for (const c of urls) {
-      expect(fixer.fix(c)).not.toBeNull()
+      expect(fixer.fix(c), c).not.toBeNull()
     }
   });
 

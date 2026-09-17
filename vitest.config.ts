@@ -23,6 +23,9 @@ export default defineConfig({
 		},
 	},
 	test: {
+		// globals: describe/it are used bare (mocha-style, matching the
+		// in-extension suite's habit); expect is imported explicitly per file.
+		// The runtime globals switch pairs with "vitest/globals" in tsconfig.
 		globals: true,
 		setupFiles: [pathLib.join(repoRoot, "src", "test", "vitest", "setup.ts")],
 		exclude: [
